@@ -1,0 +1,6 @@
+[[hooks]]
+stage = "post_build"
+# command = "cp"
+# command_arguments = ["./target/main.css", "./dist/.stage/main.css"]
+command = "powershell"
+command_arguments = ["cp", "./target/main.css", "./dist/.stage/main.css"]
