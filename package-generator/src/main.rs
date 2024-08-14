@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use tokio::{
     fs::{read_dir, try_exists, write, File},
     io::AsyncReadExt,
@@ -12,7 +14,25 @@ async fn main() {
     file.read_to_string(&mut str)
         .await
         .expect("Unable to read preset cargo file to string");
-    let mut dirs = read_dir("../plugins/")
+    let mut timeline_location = String::new();
+    let mut timeline_location_file = File::open("../timeline_location.txt")
+        .await
+        .expect("Did not find timeline location file!");
+    timeline_location_file
+        .read_to_string(&mut timeline_location)
+        .await
+        .expect("Unable to read timeline location file!");
+
+    let timeline_directory = PathBuf::from("../").join(PathBuf::from(timeline_location));
+
+    str += &format!(
+        "\ntypes = {{path = \"{}\", features = [\"server\"]}}\n",
+        timeline_directory.join("types").display()
+    );
+
+    let plugins_directory = timeline_directory.join(PathBuf::from("plugins/"));
+
+    let mut dirs = read_dir(plugins_directory)
         .await
         .expect("Unable to find plugins directory");
     while let Some(entry) = dirs

@@ -17,6 +17,5 @@ serde = "1.0.197"
 serde_json = "1.0.114"
 tokio = { version = "1.36.0", features = ["full"] }
 toml = "0.8.10"
-types = {path = "../types", features = ["server"]}
 url = { version = "2.5.0", features = ["serde"] }
 cairo-rs = "0.20.0"
