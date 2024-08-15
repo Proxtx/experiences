@@ -225,6 +225,17 @@ impl ExperienceManager {
         Ok(id)
     }
 
+    pub async fn set_experience_visibility(
+        &self,
+        id: &str,
+        visibility: bool,
+    ) -> ExperienceResult<()> {
+        let mut experience = self.get_experience(id).await?;
+        experience.public = visibility;
+
+        self.save_experience(id, experience).await
+    }
+
     async fn save_experience(&self, id: &str, experience: Experience) -> ExperienceResult<()> {
         self.write_experience(id, &experience).await?;
 
