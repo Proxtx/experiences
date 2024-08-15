@@ -8,6 +8,7 @@ use crate::timeline::types::api::{AvailablePlugins, CompressedEvent};
 #[derive(Debug, Clone, Deserialize)]
 pub struct ExperienceEvent {
     pub favorite: bool,
+    pub id: String,
     pub event: CompressedEvent,
 }
 
@@ -16,6 +17,7 @@ pub struct ExperienceEvent {
 pub struct Experience {
     pub events: HashMap<AvailablePlugins, Vec<ExperienceEvent>>,
     pub public: bool,
+    pub name: String,
 }
 
 #[cfg_attr(feature = "server", derive(Serialize))]
