@@ -17,3 +17,5 @@ Cargo.lock
 timeline_location.txt
 shared/Cargo.toml
 shared/Cargo.lock
+
+frontend/dist/
