@@ -10,7 +10,10 @@ name = "shared"
 path = "src/lib.rs"
 
 [features]
-server = ["types/server"]
+server = ["types/client", "dep:tokio"]
 client = ["types/client"]
 
 [dependencies]
+tokio = { version = "1.36.0", features = ["full"], optional=true }
+serde_json = "1.0.114"
+serde = { version = "1.0.197", features = ["derive"] }
