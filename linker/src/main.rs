@@ -26,8 +26,11 @@ async fn main() {
     let timeline_directory = PathBuf::from("../").join(PathBuf::from(timeline_location));
 
     str += &format!(
-        "\ntypes = {{path = \"{}\"}}\n",
-        timeline_directory.join("types").display()
+        "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
+        timeline_frontend = {{path = \"{}\", optional=true}}
+        \n",
+        timeline_directory.join("types").display(),
+        timeline_directory.join("frontend").display()
     );
 
     write("../shared/Cargo.toml", str)

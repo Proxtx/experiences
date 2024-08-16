@@ -11,7 +11,7 @@ path = "src/lib.rs"
 
 [features]
 server = ["types/client", "dep:tokio"]
-client = ["types/client"]
+client = ["types/client", "dep:timeline_frontend"]
 
 [dependencies]
 tokio = { version = "1.36.0", features = ["full"], optional=true }

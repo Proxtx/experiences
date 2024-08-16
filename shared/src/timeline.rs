@@ -4,3 +4,6 @@ impl From<crate::types::ExperienceError> for types::api::APIError {
         Self::ExperienceError(value.to_string())
     }
 }
+
+#[cfg(feature="client")]
+pub use timeline_frontend_lib as frontend;
