@@ -4,16 +4,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::timeline::types::api::{AvailablePlugins, CompressedEvent};
 
-#[cfg_attr(feature = "server", derive(Serialize))]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ExperienceEvent {
     pub favorite: bool,
     pub id: String,
     pub event: CompressedEvent,
 }
 
-#[cfg_attr(feature = "server", derive(Serialize))]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Experience {
     pub events: HashMap<AvailablePlugins, Vec<ExperienceEvent>>,
     pub public: bool,

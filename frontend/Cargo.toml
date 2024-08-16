@@ -13,6 +13,7 @@ stylers = { version = "1.0.0-alpha" }
 url = { version = "2.5.2", features = ["serde"] }
 web-sys = { version = "0.3.69", features = ["TouchList", "TouchEvent", "Touch", "HtmlDocument"] }
 shared = {path = "../shared", features = ["client"]}
+console_error_panic_hook = "0.1.7"
 
 [build-dependencies]
 stylers = { version = "1.0.0-alpha" }

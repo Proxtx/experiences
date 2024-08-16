@@ -47,7 +47,8 @@ pub fn TitleBar(
                     on:click=|v| {
                         event_target::<web_sys::HtmlElement>(&v)
                             .style()
-                            .set_property("transform", "rotate(360deg)").unwrap();
+                            .set_property("transform", "rotate(360deg)")
+                            .unwrap();
                         let _ = leptos::window().location().reload();
                     }
                 />
@@ -81,4 +82,14 @@ pub fn StyledView(children: Children) -> impl IntoView {
         }
     };
     view! { class=stylers_class, <div class="view">{children()}</div> }
+}
+
+#[component]
+pub fn Info(children: Children) -> impl IntoView {
+    view! { <div class="infoWrapper">{children()}</div> }
+}
+
+#[component]
+pub fn Error(children: Children) -> impl IntoView {
+    view! { <div class="errorWrapper">{children()}</div> }
 }

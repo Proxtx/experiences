@@ -18,7 +18,7 @@ pub mod experiences {
     use crate::config::Config;
     use crate::experience_manager::ExperienceManager;
 
-    #[get("/experience/<id>")]
+    #[post("/experience/<id>")]
     pub async fn get_experience(
         id: &str,
         config: &State<Config>,
@@ -201,10 +201,25 @@ pub fn auth(cookies: &CookieJar<'_>, config: &State<Config>) -> APIResult<()> {
 }
 
 #[post("/<path..>")]
-pub fn api_redirect(config: &State<Config>, path: PathBuf) -> Redirect {
+pub fn api_redirect_post(config: &State<Config>, path: PathBuf) -> Redirect {
     Redirect::to(
         config
             .timeline_url
+            .join("/api/")
+            .unwrap()
+            .join(path.to_str().unwrap_or(""))
+            .unwrap()
+            .to_string(),
+    )
+}
+
+#[get("/<path..>")]
+pub fn api_redirect_get(config: &State<Config>, path: PathBuf) -> Redirect {
+    Redirect::to(
+        config
+            .timeline_url
+            .join("/api/")
+            .unwrap()
             .join(path.to_str().unwrap_or(""))
             .unwrap()
             .to_string(),

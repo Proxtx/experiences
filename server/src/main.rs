@@ -36,7 +36,8 @@ async fn rocket() -> _ {
                 experiences::delete_event,
                 experiences::change_visibility,
                 experiences::append_event,
-                api::api_redirect
+                api::api_redirect_post,
+                api::api_redirect_get
             ],
         );
     rocket_state
