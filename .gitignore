@@ -17,5 +17,7 @@ Cargo.lock
 timeline_location.txt
 shared/Cargo.toml
 shared/Cargo.lock
+server/config.toml
+server/experiences
 
 frontend/dist/

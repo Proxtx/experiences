@@ -12,6 +12,8 @@ mod api;
 mod config;
 mod experience_manager;
 
+use api::experiences;
+
 #[rocket::launch]
 async fn rocket() -> _ {
     let config = config::Config::load()
@@ -25,7 +27,18 @@ async fn rocket() -> _ {
         .manage(config)
         .manage(experience_manager)
         .mount("/", FileServer::from("../frontend/dist/"))
-        .mount("/api", routes![]);
+        .mount(
+            "/api",
+            routes![
+                experiences::create_experience,
+                experiences::get_experience,
+                experiences::favorite_event,
+                experiences::delete_event,
+                experiences::change_visibility,
+                experiences::append_event,
+                api::api_redirect
+            ],
+        );
     rocket_state
 }
 

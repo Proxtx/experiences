@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use tokio::{
-    fs::{read_dir, try_exists, write, File},
+    fs::{write, File},
     io::AsyncReadExt,
 };
 
