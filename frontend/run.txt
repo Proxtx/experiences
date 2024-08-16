@@ -1,1 +1,1 @@
-cargo watch -i dist -- trunk serve
+cargo watch -i dist -- trunk build
