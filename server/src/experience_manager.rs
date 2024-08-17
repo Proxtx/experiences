@@ -193,7 +193,24 @@ impl ExperienceManager {
                 }
             }
 
-            Ok(experience_b_id)
+            self.save_experience(&experience_a_id, experience_a)
+                .await
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Unable to save experience when creating a connection between them: {}",
+                        e
+                    )
+                });
+            self.save_experience(&experience_b_id, experience_b)
+                .await
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Unable to save experience when creating a connection between them: {}",
+                        e
+                    )
+                });
+
+            Ok(experience_a_id)
         } else {
             self.append_event_unchecked(experience_id, event).await
         }

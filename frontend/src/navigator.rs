@@ -1,3 +1,5 @@
+use ::core::f64;
+
 use crate::wrappers::{Error, Info};
 use leptos::*;
 use leptos_use::*;
@@ -64,6 +66,7 @@ pub fn Navigator(
             height: 300px;
             background-color: var(--accentColor3Light);
             transition: 0.5s;
+            position: relative;
         }
 
         .collapsed {
@@ -72,6 +75,18 @@ pub fn Navigator(
 
         .loading {
             height: 0px;
+        }
+
+        .experience_wrap {
+            transform: translate(-50%, -50%);
+            position: absolute;
+        }
+
+        .centerExperienceCard {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
     };
 
@@ -96,9 +111,125 @@ pub fn Navigator(
             class="navigator_wrapper"
             class:collapsed=move || !expanded()
             class:loading=move || connections().is_none()
-        ></div>
+        >
+            <Suspense fallback=move || {
+                view! { <Info>Loading</Info> }
+            }>
+                {move || {
+                    connections()
+                        .map(|connections| {
+                            view! {
+                                {move || match connections.clone() {
+                                    Ok(connections) => {
+                                        let view = connections
+                                            .connections
+                                            .iter()
+                                            .enumerate()
+                                            .map(|(pos, connection)| {
+                                                let deg = pos * connections.connections.len() * 360 + 270
+                                                    + 90;
+                                                let rad = deg as f64 * f64::consts::PI / 180.0;
+                                                let x = move || {
+                                                    let width = read_width();
+                                                    format!(
+                                                        "{}px",
+                                                        width / 2.0 + (width / 8.0 * 3.0) * rad.cos(),
+                                                    )
+                                                };
+                                                let y = move || {
+                                                    let height = read_height();
+                                                    format!(
+                                                        "{}px",
+                                                        height / 2.0 + (height / 8.0 * 2.5) * rad.sin(),
+                                                    )
+                                                };
+                                                view! { class=style,
+                                                    <div class="experience_wrap" style:left=x style:top=y>
+                                                        <ExperienceCard
+                                                            name=connection.name.clone()
+                                                            id=connection.id.clone()
+                                                        />
+                                                    </div>
+                                                }
+                                            })
+                                            .collect_view();
+                                        view! { class=style,
+                                            {view}
+                                            <div class="centerExperienceCard">
+                                                <ExperienceCard
+                                                    name=connections.experience_name.clone()
+                                                    id=experience()
+                                                    enlarge=true
+                                                />
+                                            </div>
+                                        }
+                                            .into_view()
+                                    }
+                                    Err(e) => {
+                                        let e = e.clone();
+                                        view! {
+                                            <Error>
+                                                Error loading connected experiences: {move || e.to_string()}
+                                            </Error>
+                                        }
+                                            .into_view()
+                                    }
+                                }}
+                            }
+                                .into_view()
+                        })
+                }}
+
+            </Suspense>
+
+        </div>
         <div style:display=move || connections().map(|_| "none").unwrap_or("block")>
             <Info>{move || serde_json::to_string(&connections())}</Info>
+        </div>
+    }
+}
+
+#[component]
+pub fn ExperienceCard(
+    #[prop(into)] name: MaybeSignal<String>,
+    #[prop(into)] id: MaybeSignal<String>,
+    #[prop(into, default=false.into())] enlarge: MaybeSignal<bool>,
+    #[prop(into, default=false.into())] focus: MaybeSignal<bool>,
+    #[prop(into, default=Callback::new(|_| {}))] click: Callback<web_sys::MouseEvent, ()>,
+) -> impl IntoView {
+    let style = style! {
+        img {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .innerWrap {
+            width: 50px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            border: 3px solid var(--accentColor3);
+            border-radius: 5px;
+            background-color: var(--accentColor3);
+        }
+
+        .textWrap {
+            width: 100%;
+            color: var(--lightColor);
+            word-wrap: break-word;
+            text-align: center;
+            font-size: 80%;
+        }
+
+        .enlarge {
+            width: 70px;
+        }
+    };
+
+    view! { class=style,
+        <div class="innerWrap" class:enlarge=enlarge on:click=click>
+            <img src="/icons/logo.png"/>
+            <a class="textWrap">{name}</a>
         </div>
     }
 }
