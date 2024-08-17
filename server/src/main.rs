@@ -13,6 +13,7 @@ mod config;
 mod experience_manager;
 
 use api::experiences;
+use tokio::sync::RwLock;
 
 #[rocket::launch]
 async fn rocket() -> _ {
@@ -26,6 +27,9 @@ async fn rocket() -> _ {
         .register("/", catchers![not_found])
         .manage(config)
         .manage(experience_manager)
+        .manage(api::navigator::NavigatorPosition(RwLock::new(
+            "0".to_string(),
+        )))
         .mount("/", FileServer::from("../frontend/dist/"))
         .mount(
             "/api",

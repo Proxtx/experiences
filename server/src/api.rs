@@ -8,7 +8,8 @@ pub use {
     serde::{Deserialize, Serialize},
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::types::{ExperienceError, ExperienceEvent},
+    shared::types::{ExperienceConnection, ExperienceError, ExperienceEvent},
+    tokio::sync::RwLock,
 };
 
 use {crate::config::Config, rocket::response::Redirect, std::path::PathBuf};
@@ -184,6 +185,67 @@ pub mod experiences {
                 _ => status::Custom(Status::InternalServerError, Json(Err(e.into()))),
             },
         }
+    }
+}
+
+pub mod navigator {
+    use super::*;
+    use crate::config::Config;
+    use crate::experience_manager::ExperienceManager;
+
+    pub struct NavigatorPosition(pub RwLock<String>);
+
+    #[post("/navigator/<id>")]
+    pub async fn get_connections(
+        id: &str,
+        config: &State<Config>,
+        cookies: &CookieJar<'_>,
+        experience_manager: &State<ExperienceManager>,
+        navigator_position: &State<NavigatorPosition>,
+    ) -> status::Custom<Json<APIResult<Vec<ExperienceConnection>>>> {
+        if let Err(e) = auth(cookies, config) {
+            return status::Custom(Status::Unauthorized, Json(Err(e)));
+        }
+
+        match experience_manager.get_experience(id).await {
+            Ok(v) => {
+                *navigator_position.0.write().await = id.to_string();
+                let res = v
+                    .events
+                    .get(&AvailablePlugins::timeline_plugin_experience)
+                    .map(|v| {
+                        v.iter()
+                            .map(|v| ExperienceConnection {
+                                name: v.event.title.clone(),
+                                id: v.id.clone(),
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or(Vec::new());
+                status::Custom(Status::Ok, Json(Ok(res)))
+            }
+            Err(e) => match &e {
+                ExperienceError::NotFound(_) => {
+                    status::Custom(Status::NotFound, Json(Err(e.into())))
+                }
+                _ => status::Custom(Status::InternalServerError, Json(Err(e.into()))),
+            },
+        }
+    }
+
+    #[post("/navigator/position")]
+    pub async fn get_position(
+        config: &State<Config>,
+        cookies: &CookieJar<'_>,
+        navigator_position: &State<NavigatorPosition>,
+    ) -> status::Custom<Json<APIResult<String>>> {
+        if let Err(e) = auth(cookies, config) {
+            return status::Custom(Status::Unauthorized, Json(Err(e)));
+        }
+        status::Custom(
+            Status::Ok,
+            Json(Ok(navigator_position.0.read().await.clone())),
+        )
     }
 }
 
