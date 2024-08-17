@@ -1,9 +1,11 @@
 use crate::wrappers::{Info, StyledView, TitleBar};
 use leptos::*;
 use leptos_router::*;
+use navigator::StandaloneNavigator;
 use shared::timeline::frontend::plugin_manager::PluginManager;
 
 mod experience;
+mod navigator;
 mod wrappers;
 
 fn main() {
@@ -54,6 +56,7 @@ fn ExperienceView() -> impl IntoView {
     view! {
         <StyledView>
             <TitleBar/>
+            <StandaloneNavigator/>
             {move || match plugin_manager.value()() {
                 Some(v) => {
                     provide_context(v);

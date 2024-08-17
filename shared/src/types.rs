@@ -51,6 +51,14 @@ pub struct ExperienceConnection {
     pub name: String,
 }
 
+#[cfg_attr(feature = "server", derive(Serialize))]
+#[cfg_attr(feature = "client", derive(Deserialize))]
+#[derive(Debug, Clone)]
+pub struct ExperienceConnectionResponse {
+    pub connections: Vec<ExperienceConnection>,
+    pub experience_name: String,
+}
+
 impl error::Error for ExperienceError {}
 
 #[cfg(feature = "server")]

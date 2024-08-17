@@ -8,7 +8,9 @@ pub use {
     serde::{Deserialize, Serialize},
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::types::{ExperienceConnection, ExperienceError, ExperienceEvent},
+    shared::types::{
+        ExperienceConnection, ExperienceConnectionResponse, ExperienceError, ExperienceEvent,
+    },
     tokio::sync::RwLock,
 };
 
@@ -202,7 +204,7 @@ pub mod navigator {
         cookies: &CookieJar<'_>,
         experience_manager: &State<ExperienceManager>,
         navigator_position: &State<NavigatorPosition>,
-    ) -> status::Custom<Json<APIResult<Vec<ExperienceConnection>>>> {
+    ) -> status::Custom<Json<APIResult<ExperienceConnectionResponse>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
         }
@@ -222,7 +224,13 @@ pub mod navigator {
                             .collect::<Vec<_>>()
                     })
                     .unwrap_or(Vec::new());
-                status::Custom(Status::Ok, Json(Ok(res)))
+                status::Custom(
+                    Status::Ok,
+                    Json(Ok(ExperienceConnectionResponse {
+                        connections: res,
+                        experience_name: v.name.clone(),
+                    })),
+                )
             }
             Err(e) => match &e {
                 ExperienceError::NotFound(_) => {
