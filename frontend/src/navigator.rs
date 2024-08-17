@@ -80,6 +80,7 @@ pub fn Navigator(
         .experience_wrap {
             transform: translate(-50%, -50%);
             position: absolute;
+            z-index: 2;
         }
 
         .centerExperienceCard {
@@ -87,6 +88,16 @@ pub fn Navigator(
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .connection {
+            border: 2px solid var(--accentColor3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center left;
+            z-index: 1;
         }
     };
 
@@ -126,30 +137,40 @@ pub fn Navigator(
                                             .iter()
                                             .enumerate()
                                             .map(|(pos, connection)| {
-                                                let deg = pos * connections.connections.len() * 360 + 270
-                                                    + 90;
-                                                let rad = deg as f64 * f64::consts::PI / 180.0;
+                                                let deg = pos as f64 / connections.connections.len() as f64
+                                                    * 360.0 + 270.0 + 0.0;
+                                                let rad = deg * f64::consts::PI / 180.0;
                                                 let x = move || {
                                                     let width = read_width();
-                                                    format!(
-                                                        "{}px",
-                                                        width / 2.0 + (width / 8.0 * 3.0) * rad.cos(),
-                                                    )
+                                                    width / 2.0 + (width / 8.0 * 3.0) * rad.cos()
                                                 };
                                                 let y = move || {
                                                     let height = read_height();
-                                                    format!(
-                                                        "{}px",
-                                                        height / 2.0 + (height / 8.0 * 2.5) * rad.sin(),
-                                                    )
+                                                    height / 2.0 + (height / 8.0 * 2.5) * rad.sin()
+                                                };
+                                                let connection_len = move || {
+                                                    let height = read_height();
+                                                    let width = read_width();
+                                                    ((height / 2.0 - y()).powf(2.0)
+                                                        + (width / 2.0 - x()).powf(2.0))
+                                                        .sqrt()
                                                 };
                                                 view! { class=style,
-                                                    <div class="experience_wrap" style:left=x style:top=y>
+                                                    <div
+                                                        class="experience_wrap"
+                                                        style:left=move || format!("{}px", x())
+                                                        style:top=move || format!("{}px", y())
+                                                    >
                                                         <ExperienceCard
                                                             name=connection.name.clone()
                                                             id=connection.id.clone()
                                                         />
                                                     </div>
+                                                    <div
+                                                        class="connection"
+                                                        style:width=move || format!("{}px", connection_len())
+                                                        style:transform=move || { format!("rotate({}deg)", deg) }
+                                                    ></div>
                                                 }
                                             })
                                             .collect_view();
@@ -169,7 +190,8 @@ pub fn Navigator(
                                         let e = e.clone();
                                         view! {
                                             <Error>
-                                                Error loading connected experiences: {move || e.to_string()}
+                                                Error loading connected experiences :
+                                                {move || e.to_string()}
                                             </Error>
                                         }
                                             .into_view()
