@@ -38,21 +38,8 @@ pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
 
 #[component]
 pub fn ExperienceView(#[prop(into)] experience: MaybeSignal<Experience>) -> impl IntoView {
-    let event_view_data = create_memo(move |_| {
-        experience()
-            .events
-            .iter()
-            .map(|(k, v)| {
-                (
-                    k.clone(),
-                    v.iter().map(|e| e.event.clone()).collect::<Vec<_>>(),
-                )
-            })
-            .collect::<HashMap<_, _>>()
-    });
-
     let plugin_manager = use_context::<PluginManager>()
         .expect("Plugin manager was not provided as context! Not good, not recoverable.");
 
-    view! { <EventsViewer events=event_view_data plugin_manager/> }
+    view! { <EventsViewer events=Signal::derive(move || experience().events) plugin_manager/> }
 }

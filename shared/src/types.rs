@@ -1,14 +1,23 @@
-use std::{collections::HashMap, error, fmt};
+use std::{collections::HashMap, error, fmt, hash::Hash};
 
 use serde::{Deserialize, Serialize};
 
-use crate::timeline::types::api::{AvailablePlugins, CompressedEvent};
+use crate::timeline::types::api::{AvailablePlugins, CompressedEvent, EventWrapper};
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct ExperienceEvent {
     pub favorite: bool,
     pub id: String,
     pub event: CompressedEvent,
+}
+
+impl EventWrapper for ExperienceEvent {
+    fn get_compressed_event(&self) -> CompressedEvent {
+        self.event.clone()
+    }
+    fn hash(&self, hasher: &mut impl std::hash::Hasher) {
+        self.id.hash(hasher)
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
