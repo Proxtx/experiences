@@ -40,11 +40,20 @@ pub fn StandaloneNavigator(
                 view! {
                     {move || match selected_experience_internal() {
                         Some(v) => {
-                            let experience = create_rw_signal(v.clone());
+                            let (experience, write_experience) = create_signal(v.clone());
                             create_effect(move |_| {
                                 selected_experience.set(Some(experience().clone()))
                             });
-                            view! { <Navigator experience/> }.into_view()
+                            view! {
+                                <Navigator
+                                    experience
+                                    navigate=create_signal(
+                                            NavigatorOutput::Signal(write_experience),
+                                        )
+                                        .0
+                                />
+                            }
+                                .into_view()
                         }
                         None => view! { <Info>Loading</Info> }.into_view(),
                     }}
@@ -55,18 +64,38 @@ pub fn StandaloneNavigator(
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum NavigatorOutput {
+    Callback(Callback<String>),
+    Signal(WriteSignal<String>),
+    None,
+}
+
+impl NavigatorOutput {
+    pub fn output(&self, output: String) {
+        match self {
+            NavigatorOutput::Callback(v) => v(output),
+            NavigatorOutput::None => {}
+            NavigatorOutput::Signal(v) => v.set(output),
+        }
+    }
+}
+
 #[component]
 pub fn Navigator(
-    #[prop(into)] experience: RwSignal<String>,
+    #[prop(into)] experience: Signal<String>,
     #[prop(into, default=true.into())] expanded: MaybeSignal<bool>,
+    #[prop(into, default=create_signal(NavigatorOutput::None).0.into())] navigate: Signal<
+        NavigatorOutput,
+    >,
 ) -> impl IntoView {
     let style = style! {
         .navigator_wrapper {
             width: 100%;
             height: 300px;
             background-color: var(--accentColor3Light);
-            transition: 0.5s;
             position: relative;
+            overflow: hidden;
         }
 
         .collapsed {
@@ -117,12 +146,7 @@ pub fn Navigator(
     });
 
     view! { class=style,
-        <div
-            ref=wrapper
-            class="navigator_wrapper"
-            class:collapsed=move || !expanded()
-            class:loading=move || connections().is_none()
-        >
+        <div ref=wrapper class="navigator_wrapper" class:collapsed=move || !expanded()>
             <Suspense fallback=move || {
                 view! { <Info>Loading</Info> }
             }>
@@ -155,6 +179,7 @@ pub fn Navigator(
                                                         + (width / 2.0 - x()).powf(2.0))
                                                         .sqrt()
                                                 };
+                                                let connection_id = connection.id.clone();
                                                 view! { class=style,
                                                     <div
                                                         class="experience_wrap"
@@ -164,7 +189,11 @@ pub fn Navigator(
                                                         <ExperienceCard
                                                             name=connection.name.clone()
                                                             id=connection.id.clone()
+                                                            click=Callback::new(move |_e: web_sys::MouseEvent| {
+                                                                navigate().output(connection_id.clone());
+                                                            })
                                                         />
+
                                                     </div>
                                                     <div
                                                         class="connection"
@@ -203,10 +232,6 @@ pub fn Navigator(
                 }}
 
             </Suspense>
-
-        </div>
-        <div style:display=move || connections().map(|_| "none").unwrap_or("block")>
-            <Info>{move || serde_json::to_string(&connections())}</Info>
         </div>
     }
 }

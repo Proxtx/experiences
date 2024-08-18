@@ -1,7 +1,7 @@
 use crate::wrappers::{Info, StyledView, TitleBar};
 use leptos::*;
 use leptos_router::*;
-use navigator::StandaloneNavigator;
+use navigator::{Navigator, StandaloneNavigator};
 use shared::timeline::frontend::plugin_manager::PluginManager;
 
 mod experience;
@@ -56,7 +56,22 @@ fn ExperienceView() -> impl IntoView {
     view! {
         <StyledView>
             <TitleBar/>
-            <StandaloneNavigator/>
+            <Navigator
+                experience=experience_id
+                navigate=create_signal(
+                        navigator::NavigatorOutput::Callback(
+                            Callback::new(|id| {
+                                {
+                                    use_navigate()(
+                                        &format!("/experience/{}", id),
+                                        NavigateOptions::default(),
+                                    )
+                                }
+                            }),
+                        ),
+                    )
+                    .0
+            />
             {move || match plugin_manager.value()() {
                 Some(v) => {
                     provide_context(v);
