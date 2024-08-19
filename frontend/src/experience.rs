@@ -7,6 +7,7 @@ use shared::timeline::frontend::api::api_request;
 use shared::timeline::frontend::events_display::EventsViewer;
 use shared::timeline::frontend::plugin_manager::PluginManager;
 use shared::types::Experience;
+use shared::types::ExperienceEvent;
 
 #[component]
 pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
@@ -41,5 +42,15 @@ pub fn ExperienceView(#[prop(into)] experience: MaybeSignal<Experience>) -> impl
     let plugin_manager = use_context::<PluginManager>()
         .expect("Plugin manager was not provided as context! Not good, not recoverable.");
 
-    view! { <EventsViewer events=Signal::derive(move || experience().events) plugin_manager/> }
+    type GenTypeParam2 = fn(ExperienceEvent) -> View;
+
+    let t: GenTypeParam2 = |e: ExperienceEvent| view! { <h1>hi</h1> }.into_view();
+
+    view! {
+        <EventsViewer<ExperienceEvent, GenTypeParam2>
+            events=Signal::derive(move || experience().events)
+            plugin_manager
+            slide_over=Some(t)
+        />
+    }
 }
