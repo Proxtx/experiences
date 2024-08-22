@@ -36,4 +36,25 @@ async fn main() {
     write("../shared/Cargo.toml", str)
         .await
         .expect("Unable to write new Cargo.toml file");
+
+    //navigator
+
+    let mut navigator_file = File::open("navigator.Cargo.toml")
+        .await
+        .expect("Did not find preset cargo file");
+    let mut str = String::new();
+    navigator_file
+        .read_to_string(&mut str)
+        .await
+        .expect("Unable to read preset cargo file to string");
+
+    str += &format!(
+        "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
+        \n",
+        timeline_directory.join("types").display(),
+    );
+
+    write("../experiences_navigator/Cargo.toml", str)
+        .await
+        .expect("Unable to write new Cargo.toml file");
 }

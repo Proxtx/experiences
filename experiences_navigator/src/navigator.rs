@@ -1,10 +1,11 @@
 use ::core::f64;
 
-use crate::wrappers::{Error, Info};
 use leptos::*;
 use leptos_use::*;
-use shared::{timeline::frontend::api::api_request, types::ExperienceConnectionResponse};
+use serde::Deserialize;
 use stylers::style;
+use crate::api::api_request;
+use experiences_types_lib::types::ExperienceConnectionResponse;
 
 #[component]
 pub fn StandaloneNavigator(
@@ -279,4 +280,14 @@ pub fn ExperienceCard(
             <a class="textWrap">{name}</a>
         </div>
     }
+}
+
+#[component]
+pub fn Info(children: Children) -> impl IntoView {
+    view! { <div class="infoWrapper">{children()}</div> }
+}
+
+#[component]
+pub fn Error(children: Children) -> impl IntoView {
+    view! { <div class="errorWrapper">{children()}</div> }
 }

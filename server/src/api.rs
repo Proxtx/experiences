@@ -8,9 +8,10 @@ pub use {
     serde::{Deserialize, Serialize},
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::types::{
-        ExperienceConnection, ExperienceConnectionResponse, ExperienceError, ExperienceEvent,
+    shared::standalone_experience_types::types::{
+        ExperienceConnection, ExperienceConnectionResponse
     },
+    shared::types::{ExperienceError, ExperienceEvent},
     tokio::sync::RwLock,
 };
 
