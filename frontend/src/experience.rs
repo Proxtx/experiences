@@ -42,9 +42,11 @@ pub fn ExperienceView(#[prop(into)] experience: MaybeSignal<Experience>) -> impl
     let plugin_manager = use_context::<PluginManager>()
         .expect("Plugin manager was not provided as context! Not good, not recoverable.");
 
-    type GenTypeParam2 = fn(ExperienceEvent) -> View;
+    type GenTypeParam2 = fn(ExperienceEvent, Box<dyn Fn()>) -> View;
 
-    let t: GenTypeParam2 = |e: ExperienceEvent| view! { <h1>hi</h1> }.into_view();
+    let t: GenTypeParam2 = |e: ExperienceEvent, close_callback| {
+        view! { <button on:click=move |_| close_callback()>close</button> }.into_view()
+    };
 
     view! {
         <EventsViewer<ExperienceEvent, GenTypeParam2>
