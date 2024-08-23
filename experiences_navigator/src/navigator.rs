@@ -14,54 +14,68 @@ pub fn StandaloneNavigator(
     let selected_experience_internal = create_memo(move |_| selected_experience());
     create_effect(move |_| selected_experience.set(selected_experience_internal()));
 
-    let (global_position_error, write_global_position_error) = create_signal(None);
-
-    let global_position = create_action(move |_| async move {
-        if selected_experience_internal.get_untracked().is_none() {
+    let global_position_error = create_resource(selected_experience_internal, move|selected_experience_internal| async move {
+        if selected_experience_internal.is_none() {
             match api_request("/navigator/position", &()).await {
-                Err(e) => write_global_position_error(Some(e)),
-                Ok(v) => selected_experience.set(v),
+                Err(e) => Some(e),
+                Ok(v) => {
+                    selected_experience.set(v);
+                    None
+                },
             }
         }
-    });
-
-    create_effect(move |_| {
-        if selected_experience_internal().is_none() {
-            global_position.dispatch(());
+        else {
+            None
         }
     });
 
     view! {
-        {move || match global_position_error() {
-            Some(e) => {
-                view! { <Error>Error loading navigator position: {move || e.to_string()}</Error> }
-                    .into_view()
-            }
-            None => {
-                view! {
-                    {move || match selected_experience_internal() {
-                        Some(v) => {
-                            let (experience, write_experience) = create_signal(v.clone());
-                            create_effect(move |_| {
-                                selected_experience.set(Some(experience().clone()))
-                            });
-                            view! {
-                                <Navigator
-                                    experience
-                                    navigate=create_signal(
-                                            NavigatorOutput::Signal(write_experience),
-                                        )
-                                        .0
-                                />
+        <Suspense fallback=move || {
+            view! { <Info>LoadingXYZ</Info> }
+        }>
+            {move || {
+                global_position_error()
+                    .map(|positioning_error| {
+                        match positioning_error {
+                            None => {
+                                view! {
+                                    {move || match selected_experience_internal() {
+                                        Some(v) => {
+                                            let (experience, write_experience) = create_signal(
+                                                v.clone(),
+                                            );
+                                            create_effect(move |_| {
+                                                selected_experience.set(Some(experience().clone()))
+                                            });
+                                            view! {
+                                                <Navigator
+                                                    experience
+                                                    navigate=create_signal(
+                                                            NavigatorOutput::Signal(write_experience),
+                                                        )
+                                                        .0
+                                                />
+                                            }
+                                                .into_view()
+                                        }
+                                        None => view! { <Info>Loading</Info> }.into_view(),
+                                    }}
+                                }
+                                    .into_view()
                             }
-                                .into_view()
+                            Some(e) => {
+                                view! {
+                                    <Error>
+                                        Error loading navigator position: {move || e.to_string()}
+                                    </Error>
+                                }
+                                    .into_view()
+                            }
                         }
-                        None => view! { <Info>Loading</Info> }.into_view(),
-                    }}
-                }
-                    .into_view()
-            }
-        }}
+                    })
+            }}
+
+        </Suspense>
     }
 }
 
