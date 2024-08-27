@@ -13,3 +13,6 @@ pub struct ExperienceConnectionResponse {
     pub connections: Vec<ExperienceConnection>,
     pub experience_name: String,
 }
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct ExperiencesHostname(pub String);

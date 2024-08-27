@@ -42,8 +42,8 @@ async fn rocket() -> _ {
                 experiences::append_event,
                 api::navigator::get_connections,
                 api::navigator::get_position,
-                api::api_redirect_post,
-                api::api_redirect_get
+                api::timeline_url,
+                api::auth_request
             ],
         );
     rocket_state

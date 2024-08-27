@@ -1,5 +1,7 @@
 use {
-    reqwest::Client,
+    experiences_types_lib::types::ExperiencesHostname,
+    leptos::use_context,
+    reqwest::{header::ACCESS_CONTROL_ALLOW_CREDENTIALS, Client},
     types::api::APIResult,
     url::{ParseError, Url},
 };
@@ -14,6 +16,7 @@ where
         &client
             .post(url)
             .body(serde_json::to_string(request)?)
+            .fetch_credentials_include()
             .send()
             .await?
             .text()
@@ -22,5 +25,6 @@ where
 }
 
 pub fn relative_url(path: &str) -> Result<Url, ParseError> {
-    Url::parse(&leptos::window().origin())?.join(path)
+    let experiences_host: ExperiencesHostname = use_context().unwrap();
+    Url::parse(&experiences_host.0)?.join(path)
 }

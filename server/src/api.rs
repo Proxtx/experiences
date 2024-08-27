@@ -6,11 +6,11 @@ pub use {
     rocket::serde::json::Json,
     rocket::State,
     serde::{Deserialize, Serialize},
+    shared::standalone_experience_types::types::{
+        ExperienceConnection, ExperienceConnectionResponse,
+    },
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::standalone_experience_types::types::{
-        ExperienceConnection, ExperienceConnectionResponse
-    },
     shared::types::{ExperienceError, ExperienceEvent},
     tokio::sync::RwLock,
 };
@@ -271,30 +271,9 @@ pub fn auth(cookies: &CookieJar<'_>, config: &State<Config>) -> APIResult<()> {
     }
 }
 
-#[post("/<path..>")]
-pub fn api_redirect_post(config: &State<Config>, path: PathBuf) -> Redirect {
-    Redirect::to(
-        config
-            .timeline_url
-            .join("/api/")
-            .unwrap()
-            .join(path.to_str().unwrap_or(""))
-            .unwrap()
-            .to_string(),
-    )
-}
-
-#[get("/<path..>")]
-pub fn api_redirect_get(config: &State<Config>, path: PathBuf) -> Redirect {
-    Redirect::to(
-        config
-            .timeline_url
-            .join("/api/")
-            .unwrap()
-            .join(path.to_str().unwrap_or(""))
-            .unwrap()
-            .to_string(),
-    )
+#[post("/timeline_url")]
+pub fn timeline_url(config: &State<Config>) -> status::Accepted<Json<APIResult<String>>> {
+    status::Accepted(Json(Ok(config.timeline_url.to_string())))
 }
 
 #[post("/auth")]

@@ -1,11 +1,11 @@
 use ::core::f64;
 
+use crate::api::{api_request, relative_url};
+use experiences_types_lib::types::ExperienceConnectionResponse;
 use leptos::*;
 use leptos_use::*;
 use serde::Deserialize;
 use stylers::style;
-use crate::api::api_request;
-use experiences_types_lib::types::ExperienceConnectionResponse;
 
 #[component]
 pub fn StandaloneNavigator(
@@ -14,24 +14,26 @@ pub fn StandaloneNavigator(
     let selected_experience_internal = create_memo(move |_| selected_experience());
     create_effect(move |_| selected_experience.set(selected_experience_internal()));
 
-    let global_position_error = create_resource(selected_experience_internal, move|selected_experience_internal| async move {
-        if selected_experience_internal.is_none() {
-            match api_request("/navigator/position", &()).await {
-                Err(e) => Some(e),
-                Ok(v) => {
-                    selected_experience.set(v);
-                    None
-                },
+    let global_position_error = create_resource(
+        selected_experience_internal,
+        move |selected_experience_internal| async move {
+            if selected_experience_internal.is_none() {
+                match api_request("/navigator/position", &()).await {
+                    Err(e) => Some(e),
+                    Ok(v) => {
+                        selected_experience.set(v);
+                        None
+                    }
+                }
+            } else {
+                None
             }
-        }
-        else {
-            None
-        }
-    });
+        },
+    );
 
     view! {
         <Suspense fallback=move || {
-            view! { <Info>LoadingXYZ</Info> }
+            view! { <Info>Loading</Info> }
         }>
             {move || {
                 global_position_error()
@@ -290,7 +292,7 @@ pub fn ExperienceCard(
 
     view! { class=style,
         <div class="innerWrap" class:enlarge=enlarge on:click=click>
-            <img src="/icons/logo.png"/>
+            <img src=move || {relative_url("/icons/logo.png").unwrap().to_string()}/>
             <a class="textWrap">{name}</a>
         </div>
     }

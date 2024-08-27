@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::wrappers::Error;
 use crate::wrappers::Info;
+use experiences_navigator_lib::api::api_request;
 use leptos::*;
-use shared::timeline::frontend::api::api_request;
 use shared::timeline::frontend::events_display::EventsViewer;
 use shared::timeline::frontend::plugin_manager::PluginManager;
 use shared::types::Experience;
@@ -11,7 +11,7 @@ use shared::types::ExperienceEvent;
 
 #[component]
 pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
-    let experience = create_resource(id, |id: String| async move {
+    let experience = create_resource(id.clone(), |id: String| async move {
         api_request::<Experience, _>(&format!("/experience/{}", id), &()).await
     });
 
@@ -19,7 +19,6 @@ pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
         <Suspense fallback=move || {
             view! { <Info>Loading</Info> }
         }>
-
             {move || {
                 experience()
                     .map(|experience| match experience {
