@@ -99,7 +99,7 @@ pub fn Band(
     children: Children,
     #[prop(into, default=create_signal("var(--accentColor3)".to_string()).0.into())]
     color: MaybeSignal<String>,
-    #[prop(default=Callback::new(|_|{}))] click: Callback<MouseEvent, ()>,
+    #[prop(into, default=Callback::new(|_|{}))] click: Callback<MouseEvent, ()>,
 ) -> impl IntoView {
     let style = style! {
         .band {

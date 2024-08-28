@@ -2,13 +2,15 @@ use std::collections::HashMap;
 
 use experiences_navigator_lib::{
     api::api_request,
-    wrappers::{Error, Info},
+    navigator::StandaloneNavigator,
+    wrappers::{Band, Error, Info, StyledView},
 };
 use leptos::*;
 use shared::timeline::frontend::events_display::EventsViewer;
 use shared::timeline::frontend::plugin_manager::PluginManager;
 use shared::types::Experience;
 use shared::types::ExperienceEvent;
+use std::sync::Arc;
 
 #[component]
 pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
@@ -44,8 +46,58 @@ pub fn ExperienceView(#[prop(into)] experience: MaybeSignal<Experience>) -> impl
 
     type GenTypeParam2 = fn(ExperienceEvent, Box<dyn Fn()>) -> View;
 
-    let t: GenTypeParam2 = |e: ExperienceEvent, close_callback| {
-        view! { <button on:click=move |_| close_callback()>close</button> }.into_view()
+    let t: GenTypeParam2 = |event: ExperienceEvent, close_callback| {
+        let selected_experience = create_rw_signal(None);
+        let close_callback = Arc::new(close_callback);
+        let close_callback_2 = close_callback.clone();
+
+        view! {
+            <StyledView>
+                <Band click=Callback::new(move |_| {
+                    close_callback_2();
+                })>
+                    <b>Close</b>
+                </Band>
+                <Band color="var(--accentColor2)".to_string()>
+                    <b>Delete</b>
+                </Band>
+                <Band color="var(--accentColor1)".to_string()>
+                    <b>Favorite</b>
+                </Band>
+                <StandaloneNavigator selected_experience=selected_experience/>
+                <Band click=Callback::new(move |_| {
+                    spawn_local({
+                        let close_callback = close_callback.clone();
+                        let selected_experience = selected_experience();
+                        let event = event.clone();
+                        async move {
+                            close_callback();
+                            if let Err(e) = experiences_navigator_lib::api::api_request::<
+                                String,
+                                _,
+                            >(
+                                    &format!(
+                                        "/experience/{}/append_event",
+                                        selected_experience.unwrap(),
+                                    ),
+                                    &(event.plugin, event.event),
+                                )
+                                .await
+                            {
+                                window()
+                                    .alert_with_message(
+                                        &format!("Unable to append event to experience: {}", e),
+                                    )
+                                    .unwrap();
+                            }
+                        }
+                    })
+                })>
+                    <b>Insert</b>
+                </Band>
+            </StyledView>
+        }
+        .into_view()
     };
 
     view! {

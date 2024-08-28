@@ -1,7 +1,7 @@
 use {
     experiences_types_lib::types::ExperiencesHostname,
     leptos::use_context,
-    reqwest::{header::ACCESS_CONTROL_ALLOW_CREDENTIALS, Client},
+    reqwest::Client,
     types::api::APIResult,
     url::{ParseError, Url},
 };

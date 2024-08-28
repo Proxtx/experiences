@@ -173,7 +173,7 @@ impl ExperienceManager {
                 id: experience_a_id.clone(),
                 event: CompressedEvent {
                     data: serde_json::to_string(&experience_a_id)?,
-                    time: shared::timeline::types::timing::Timing::Instant(Utc::now()),
+                    time: event.1.time,
                     title: experience_a.name.clone(),
                 },
             };
