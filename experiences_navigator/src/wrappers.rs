@@ -93,3 +93,29 @@ pub fn Info(children: Children) -> impl IntoView {
 pub fn Error(children: Children) -> impl IntoView {
     view! { <div class="errorWrapper">{children()}</div> }
 }
+
+#[component]
+pub fn Band(
+    children: Children,
+    #[prop(into, default=create_signal("var(--accentColor3)".to_string()).0.into())]
+    color: MaybeSignal<String>,
+    #[prop(default=Callback::new(|_|{}))] click: Callback<MouseEvent, ()>,
+) -> impl IntoView {
+    let style = style! {
+        .band {
+            padding: var(--contentSpacing);
+            box-sizing: border-box;
+            color: var(--lightColor);
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+    };
+    view! { class=style,
+        <div class="band" style:background-color=color on:click=click>
+            {children()}
+        </div>
+    }
+}

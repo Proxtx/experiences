@@ -1,7 +1,7 @@
-use crate::wrappers::{Error, Info, StyledView, TitleBar};
 use experiences_navigator_lib::{
     api::api_request,
     navigator::{Navigator, NavigatorOutput},
+    wrappers::{Error, Info, StyledView, TitleBar},
 };
 use leptos::*;
 use leptos_router::*;
@@ -11,7 +11,6 @@ use shared::{
 };
 
 mod experience;
-mod wrappers;
 
 fn main() {
     console_error_panic_hook::set_once();
@@ -74,9 +73,9 @@ fn ExperienceView() -> impl IntoView {
 
     view! {
         <StyledView>
-            <Suspense fallback=move || {view! {
-                <Info>Loading</Info>
-            }}>
+            <Suspense fallback=move || {
+                view! { <Info>Loading</Info> }
+            }>
                 {move || {
                     timeline_url_error()
                         .map(|timeline_url_error| {
@@ -114,10 +113,15 @@ fn ExperienceView() -> impl IntoView {
                                     }
                                         .into_view()
                                 }
-                                Some(e) => view! { <Error>Error loading Timeline Url: {e.to_string()}</Error> },
+                                Some(e) => {
+                                    view! {
+                                        <Error>Error loading Timeline Url: {e.to_string()}</Error>
+                                    }
+                                }
                             }
                         })
                 }}
+
             </Suspense>
         </StyledView>
     }

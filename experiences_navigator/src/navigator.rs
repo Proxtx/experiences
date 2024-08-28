@@ -11,6 +11,8 @@ use stylers::style;
 pub fn StandaloneNavigator(
     #[prop(into, default=create_rw_signal(None))] selected_experience: RwSignal<Option<String>>,
 ) -> impl IntoView {
+    //WTF FIX THIS YOU MONKE
+
     let selected_experience_internal = create_memo(move |_| selected_experience());
     create_effect(move |_| selected_experience.set(selected_experience_internal()));
 
@@ -43,17 +45,16 @@ pub fn StandaloneNavigator(
                                 view! {
                                     {move || match selected_experience_internal() {
                                         Some(v) => {
-                                            let (experience, write_experience) = create_signal(
+                                            let (experience, _write_experience) = create_signal(
                                                 v.clone(),
                                             );
-                                            create_effect(move |_| {
-                                                selected_experience.set(Some(experience().clone()))
-                                            });
                                             view! {
                                                 <Navigator
                                                     experience
                                                     navigate=create_signal(
-                                                            NavigatorOutput::Signal(write_experience),
+                                                            NavigatorOutput::Callback(
+                                                                Callback::new(move |v| { selected_experience.set(Some(v)) }),
+                                                            ),
                                                         )
                                                         .0
                                                 />
@@ -292,7 +293,7 @@ pub fn ExperienceCard(
 
     view! { class=style,
         <div class="innerWrap" class:enlarge=enlarge on:click=click>
-            <img src=move || {relative_url("/icons/logo.png").unwrap().to_string()}/>
+            <img src=move || { relative_url("/icons/logo.png").unwrap().to_string() }/>
             <a class="textWrap">{name}</a>
         </div>
     }

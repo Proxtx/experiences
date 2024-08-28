@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use crate::wrappers::Error;
-use crate::wrappers::Info;
-use experiences_navigator_lib::api::api_request;
+use experiences_navigator_lib::{
+    api::api_request,
+    wrappers::{Error, Info},
+};
 use leptos::*;
 use shared::timeline::frontend::events_display::EventsViewer;
 use shared::timeline::frontend::plugin_manager::PluginManager;
