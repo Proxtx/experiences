@@ -20,6 +20,25 @@ impl EventWrapper for ExperienceEvent {
     }
 }
 
+#[derive(PartialEq, Debug, Clone)]
+pub struct PluginExperienceEvent(pub AvailablePlugins, pub ExperienceEvent);
+
+impl EventWrapper for PluginExperienceEvent {
+    fn get_compressed_event(&self) -> CompressedEvent {
+        self.1.get_compressed_event()
+    }
+
+    fn hash(&self, hasher: &mut impl std::hash::Hasher) {
+        self.1.hash(hasher)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct FavoriteRequest {
+    pub event_id: String,
+    pub favorite: bool,
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Experience {
     pub events: HashMap<AvailablePlugins, Vec<ExperienceEvent>>,

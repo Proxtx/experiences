@@ -111,6 +111,7 @@ pub fn Band(
             flex-direction: row;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
     };
     view! { class=style,

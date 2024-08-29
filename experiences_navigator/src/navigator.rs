@@ -1,6 +1,7 @@
 use ::core::f64;
 
 use crate::api::{api_request, relative_url};
+use crate::wrappers::Band;
 use experiences_types_lib::types::ExperienceConnectionResponse;
 use leptos::*;
 use leptos_use::*;
@@ -10,6 +11,7 @@ use stylers::style;
 #[component]
 pub fn StandaloneNavigator(
     #[prop(into, default=create_rw_signal(None))] selected_experience: RwSignal<Option<String>>,
+    #[prop(into, default=true.into())] expanded: MaybeSignal<bool>,
 ) -> impl IntoView {
     //WTF FIX THIS YOU MONKE
 
@@ -50,6 +52,7 @@ pub fn StandaloneNavigator(
                                             );
                                             view! {
                                                 <Navigator
+                                                    expanded
                                                     experience
                                                     navigate=create_signal(
                                                             NavigatorOutput::Callback(
@@ -106,6 +109,7 @@ pub fn Navigator(
     #[prop(into, default=create_signal(NavigatorOutput::None).0.into())] navigate: Signal<
         NavigatorOutput,
     >,
+    #[prop(into, default=false.into())] options: MaybeSignal<bool>,
 ) -> impl IntoView {
     let style = style! {
         .navigator_wrapper {
@@ -114,10 +118,11 @@ pub fn Navigator(
             background-color: var(--accentColor3Light);
             position: relative;
             overflow: hidden;
+            transition: 0.5s;
         }
 
         .collapsed {
-            height: 200px;
+            height: 150px;
         }
 
         .loading {
@@ -146,17 +151,28 @@ pub fn Navigator(
             transform-origin: center left;
             z-index: 1;
         }
+
+        .connectedExperiencesWrapper {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: 1s;
+            opacity: 1;
+        }
+
+        .collapsedConnections {
+            height: 0%;
+            opacity: 0;
+        }
     };
+
+    let expanded = create_memo(move |_| expanded());
 
     let (read_width, write_width) = create_signal(0.0);
     let (read_height, write_height) = create_signal(0.0);
-
-    let wrapper = create_node_ref();
-    use_resize_observer(wrapper, move |entries, _observer| {
-        let rect = entries[0].content_rect();
-        write_width.set(rect.width());
-        write_height.set(rect.height());
-    });
 
     let connections = create_resource(experience, |experience| async move {
         api_request::<ExperienceConnectionResponse, _>(&format!("/navigator/{}", experience), &())
@@ -164,7 +180,7 @@ pub fn Navigator(
     });
 
     view! { class=style,
-        <div ref=wrapper class="navigator_wrapper" class:collapsed=move || !expanded()>
+        <div class="navigator_wrapper" class:collapsed=move || !expanded()>
             <Suspense fallback=move || {
                 view! { <Info>Loading</Info> }
             }>
@@ -174,6 +190,13 @@ pub fn Navigator(
                             view! {
                                 {move || match connections.clone() {
                                     Ok(connections) => {
+                                        let wrapper = create_node_ref();
+                                        use_resize_observer(wrapper, move |entries, _observer| {
+                                            let rect = entries[0].content_rect();
+                                            write_width.set(rect.width());
+                                            write_height.set(rect.height());
+                                        });
+
                                         let view = connections
                                             .connections
                                             .iter()
@@ -222,7 +245,9 @@ pub fn Navigator(
                                             })
                                             .collect_view();
                                         view! { class=style,
-                                            {view}
+                                            <div class="connectedExperiencesWrapper" ref=wrapper class:collapsedConnections = move || {!expanded()}>
+                                                {view}
+                                            </div>
                                             <div class="centerExperienceCard">
                                                 <ExperienceCard
                                                     name=connections.experience_name.clone()
@@ -251,6 +276,70 @@ pub fn Navigator(
 
             </Suspense>
         </div>
+        <Suspense fallback=move || view! {<Info>Loading</Info>}>
+        {
+            move || {
+                if options() && expanded() {
+                    match connections() {
+                        Some(loading_result) => match loading_result {
+                            Ok(connections) => {
+                                let (connections, write_connections) = create_signal(connections);
+                                let (expanded, write_expanded) = create_signal(false);
+                                view! {
+                                    <Band click=Callback::new(move |_| {write_expanded.update(|v| *v = !*v)})>
+                                        <img src=relative_url("/icons/arrow.svg").unwrap().to_string() style="position:absolute; left: var(--contentSpacing); top: 50%;transition: 100ms" style:transform=move || {
+                                            if expanded() {
+                                                "translateY(-50%) rotate(90deg)"
+                                            }
+                                            else {
+                                                "translateY(-50%) rotate(0deg)"
+                                            }
+                                        }/>
+                                        {move || {connections().experience_name}}
+                                    </Band>
+                                    <div style:display=move || if expanded() {"block"} else {"none"}>
+                                        <Band color="var(--accentColor1)"
+                                        click=Callback::new(move |_| {
+                                            let experience_id = experience();
+                                            let new_connection_status = !connections().public;
+                                            write_connections.update(|v| v.public = new_connection_status);
+                                            spawn_local(async move {
+                                                if let Err(e) = api_request::<(), _>(&format!("/experience/{}/visibility", experience_id), &new_connection_status).await {
+                                                    window().alert_with_message(&format!("Unable to change visibility: {}", e)).unwrap();
+                                                }
+                                            })
+                                        })
+                                        >
+                                            <img src=move|| {
+                                                if connections().public {
+                                                    relative_url("/icons/public.svg").unwrap().to_string()
+                                                }else {
+                                                    relative_url("/icons/private.svg").unwrap().to_string()
+                                                }}/>
+                                        </Band>
+                                    </div>
+                            }.into_view()}
+                            Err(e) => {
+                                view! {
+                                    <Error>
+                                        Error loading Navigator: {e.to_string()}
+                                    </Error>
+                                }.into_view()
+                            }
+                        }
+                        None => {
+                            view! {
+                                <Info>Loading</Info>
+                            }.into_view()
+                        }
+                    }
+                }
+                else {
+                    ().into_view()
+                }
+            }
+        }
+        </Suspense>
     }
 }
 
@@ -259,7 +348,6 @@ pub fn ExperienceCard(
     #[prop(into)] name: MaybeSignal<String>,
     #[prop(into)] id: MaybeSignal<String>,
     #[prop(into, default=false.into())] enlarge: MaybeSignal<bool>,
-    #[prop(into, default=false.into())] focus: MaybeSignal<bool>,
     #[prop(into, default=Callback::new(|_| {}))] click: Callback<web_sys::MouseEvent, ()>,
 ) -> impl IntoView {
     let style = style! {

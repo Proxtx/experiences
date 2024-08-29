@@ -87,7 +87,7 @@ impl ExperienceManager {
             && res.0 == AvailablePlugins::timeline_plugin_experience
         {
             let connected_to_experience_id: String = serde_json::from_str(&res.1.event.data)?;
-            self.delete_event_unchecked(experience_id, experience_id)
+            self.delete_event_unchecked(&connected_to_experience_id, experience_id)
                 .await.unwrap_or_else(|e| panic!("Unable to delete a connection: Deleting the connection from the counterpart failed: {}. This is my experience id: {}. This is the experience id of the counter part: {}", e, experience_id, connected_to_experience_id));
         }
         Ok(res)

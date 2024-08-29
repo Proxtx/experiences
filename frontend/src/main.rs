@@ -1,13 +1,18 @@
+#![feature(type_alias_impl_trait)]
 use experiences_navigator_lib::{
     api::api_request,
     navigator::{Navigator, NavigatorOutput},
     wrappers::{Error, Info, StyledView, TitleBar},
 };
+use html::Nav;
 use leptos::*;
 use leptos_router::*;
 use shared::{
     standalone_experience_types::types::ExperiencesHostname,
-    timeline::{frontend::plugin_manager::PluginManager, types::api::TimelineHostname},
+    timeline::{
+        frontend::{plugin_manager::PluginManager, wrappers::Login},
+        types::api::TimelineHostname,
+    },
 };
 
 mod experience;
@@ -45,9 +50,45 @@ fn NotFound() -> impl IntoView {
 
 #[component]
 fn Redirect() -> impl IntoView {
-    todo!("Automatically redirect to the last page the admin navigated to");
-    use_navigate()("/experience/", NavigateOptions::default());
-    view! { <div class="intoWrapper">"Redirecting"</div> }
+    let (update_authentication, write_update_authentication) = create_signal(0);
+
+    let error = create_resource(update_authentication, |_| async move {
+        match api_request::<String, _>("/navigator/position", &()).await {
+            Err(e) => Some(e),
+            Ok(v) => {
+                use_navigate()(&format!("/experience/{}", v), NavigateOptions::default());
+                None
+            }
+        }
+    });
+    view! {
+        <StyledView>
+            <TitleBar />
+            <Suspense fallback=move || view! {<Info>Navigating</Info>}>
+                {
+                    move || {
+                        error.map(|v| {
+                            match v {
+                                Some(e) => {
+                                    let e = e.clone();
+                                    view! {
+                                        <Error>Error loading Navigator Position: {e.to_string()}</Error>
+                                        <Login update_authentication=write_update_authentication/>
+                                    }.into_view()
+                                }
+                                None => {
+                                    view! {
+                                        <Info>Redirecting</Info>
+                                    }
+                                }
+                            }
+
+                        })
+                    }
+                }
+            </Suspense>
+        </StyledView>
+    }
 }
 
 #[component]
@@ -71,6 +112,8 @@ fn ExperienceView() -> impl IntoView {
     let plugin_manager = create_action(|_: &()| async { PluginManager::new().await });
     plugin_manager.dispatch(());
 
+    let (navigator_expanded, write_navigator_expanded) = create_signal(true);
+
     view! {
         <StyledView>
             <Suspense fallback=move || {
@@ -83,31 +126,37 @@ fn ExperienceView() -> impl IntoView {
                                 None => {
                                     view! {
                                         <TitleBar/>
-                                        <Navigator
-                                            experience=experience_id
-                                            navigate=create_signal(
-                                                    NavigatorOutput::Callback(
-                                                        Callback::new(|id| {
-                                                            {
-                                                                use_navigate()(
-                                                                    &format!("/experience/{}", id),
-                                                                    NavigateOptions::default(),
-                                                                )
-                                                            }
-                                                        }),
-                                                    ),
-                                                )
-                                                .0
-                                        />
+                                        <div on:click=move |_| write_navigator_expanded(true)>
+                                            <Navigator
+                                                experience=experience_id
+                                                options=true
+                                                expanded=navigator_expanded
+                                                navigate=create_signal(
+                                                        NavigatorOutput::Callback(
+                                                            Callback::new(|id| {
+                                                                {
+                                                                    use_navigate()(
+                                                                        &format!("/experience/{}", id),
+                                                                        NavigateOptions::default(),
+                                                                    )
+                                                                }
+                                                            }),
+                                                        ),
+                                                    )
+                                                    .0
+                                            />
+                                        </div>
                                         {move || match plugin_manager.value()() {
                                             Some(v) => {
                                                 provide_context(v);
                                                 view! {
-                                                    <experience::Experience id=experience_id></experience::Experience>
-                                                }
+                                                    <div style="height: 100%;display: flex;flex-direction: column;" on:click=move |_| {write_navigator_expanded(false)}>
+                                                        <experience::Experience id=experience_id></experience::Experience>
+                                                    </div>
+                                                }.into_view()
                                             }
                                             None => {
-                                                view! { <Info>Loading</Info> }
+                                                view! { <Info>Loading</Info> }.into_view()
                                             }
                                         }}
                                     }

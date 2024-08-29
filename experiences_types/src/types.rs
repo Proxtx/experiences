@@ -12,6 +12,7 @@ pub struct ExperienceConnection {
 pub struct ExperienceConnectionResponse {
     pub connections: Vec<ExperienceConnection>,
     pub experience_name: String,
+    pub public: bool,
 }
 
 #[derive(Deserialize, Serialize, Clone)]

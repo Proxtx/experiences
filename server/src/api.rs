@@ -11,7 +11,7 @@ pub use {
     },
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::types::{ExperienceError, ExperienceEvent},
+    shared::types::{ExperienceError, ExperienceEvent, FavoriteRequest},
     tokio::sync::RwLock,
 };
 
@@ -76,12 +76,6 @@ pub mod experiences {
         }
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct FavoriteRequest {
-        event_id: String,
-        favorite: bool,
-    }
-
     #[post("/experience/<id>/favorite", data = "<request>")]
     pub async fn favorite_event(
         id: &str,
@@ -108,15 +102,10 @@ pub mod experiences {
         }
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct DeleteRequest {
-        event_id: String,
-    }
-
     #[post("/experience/<id>/delete", data = "<request>")]
     pub async fn delete_event(
         id: &str,
-        request: Json<DeleteRequest>,
+        request: Json<String>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
         experience_manager: &State<ExperienceManager>,
@@ -125,7 +114,7 @@ pub mod experiences {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
         }
 
-        match experience_manager.delete_event(id, &request.event_id).await {
+        match experience_manager.delete_event(id, &request).await {
             Ok(v) => status::Custom(Status::Ok, Json(Ok(v))),
             Err(e) => match &e {
                 ExperienceError::NotFound(_) => {
@@ -136,15 +125,10 @@ pub mod experiences {
         }
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct VisibilityRequest {
-        visibility: bool,
-    }
-
     #[post("/experience/<id>/visibility", data = "<request>")]
     pub async fn change_visibility(
         id: &str,
-        request: Json<VisibilityRequest>,
+        request: Json<bool>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
         experience_manager: &State<ExperienceManager>,
@@ -154,7 +138,7 @@ pub mod experiences {
         }
 
         match experience_manager
-            .set_experience_visibility(id, request.visibility)
+            .set_experience_visibility(id, *request)
             .await
         {
             Ok(_) => status::Custom(Status::Ok, Json(Ok(()))),
@@ -230,6 +214,7 @@ pub mod navigator {
                     Json(Ok(ExperienceConnectionResponse {
                         connections: res,
                         experience_name: v.name.clone(),
+                        public: v.public,
                     })),
                 )
             }
