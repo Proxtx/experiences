@@ -5,12 +5,19 @@ use rocket::response::content;
 use rocket::response::status;
 use rocket::Request;
 use rocket::{catch, catchers, routes};
+use shared::timeline::types::api::AvailablePlugins;
+use std::collections::HashMap;
 use tokio::fs::File;
 use tokio::io;
 
 mod api;
 mod config;
 mod experience_manager;
+mod renderer;
+
+use renderer::PluginRenderer;
+
+include!(concat!(env!("OUT_DIR"), "/plugins.rs"));
 
 use api::experiences;
 use tokio::sync::RwLock;

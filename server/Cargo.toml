@@ -19,3 +19,4 @@ toml = "0.8.10"
 url = { version = "2.5.0", features = ["serde"] }
 shared = {path = "../shared", features = ["server"]}
 uuid = {version = "1.10.0", features = ["v4"]}
+raqote = "0.8.4"
