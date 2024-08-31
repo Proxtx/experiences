@@ -381,7 +381,7 @@ pub fn ExperienceCard(
 
     view! { class=style,
         <div class="innerWrap" class:enlarge=enlarge on:click=click>
-            <img src=move || { relative_url("/icons/logo.png").unwrap().to_string() }/>
+            <img src=move || { relative_url(&format!("/api/experience/{}/cover/small", id())).unwrap().to_string() }/>
             <a class="textWrap">{name}</a>
         </div>
     }

@@ -18,6 +18,10 @@ pub use {
 use {crate::config::Config, rocket::response::Redirect, std::path::PathBuf};
 
 pub mod experiences {
+    use rocket::http::ContentType;
+    use rocket::response::content;
+    use tokio::fs::File;
+
     use super::*;
     use crate::config::Config;
     use crate::experience_manager::ExperienceManager;
@@ -172,6 +176,40 @@ pub mod experiences {
                 _ => status::Custom(Status::InternalServerError, Json(Err(e.into()))),
             },
         }
+    }
+
+    #[get("/experience/<id>/cover/<size>")]
+    pub async fn cover(
+        id: &str,
+        size: &str,
+        config: &State<Config>,
+        cookies: &CookieJar<'_>,
+        experience_manager: &State<ExperienceManager>,
+    ) -> status::Custom<Option<(ContentType, Result<File, std::io::Error>)>> {
+        let experience = match experience_manager.get_experience(id).await {
+            Ok(v) => v,
+            Err(e) => {
+                return match &e {
+                    ExperienceError::NotFound(_) => status::Custom(Status::NotFound, None),
+                    _ => status::Custom(Status::InternalServerError, None),
+                }
+            }
+        };
+
+        if !experience.public
+            && let Err(_e) = auth(cookies, config)
+        {
+            return status::Custom(Status::Unauthorized, None);
+        }
+
+        let mut path = config.covers_folder.clone();
+        if size == "small" {
+            path = path.join(format!("{}.small.png", id));
+        } else {
+            path = path.join(format!("{}.png", id));
+        }
+
+        status::Custom(Status::Ok, Some((ContentType::PNG, File::open(path).await)))
     }
 }
 

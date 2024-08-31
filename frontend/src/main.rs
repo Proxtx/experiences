@@ -150,7 +150,7 @@ fn ExperienceView() -> impl IntoView {
                                             Some(v) => {
                                                 provide_context(v);
                                                 view! {
-                                                    <div style="height: 100%;display: flex;flex-direction: column;" on:click=move |_| {write_navigator_expanded(false)}>
+                                                    <div style="overflow: auto;display: flex;flex-direction: column;" on:click=move |_| {write_navigator_expanded(false)}>
                                                         <experience::Experience id=experience_id></experience::Experience>
                                                     </div>
                                                 }.into_view()

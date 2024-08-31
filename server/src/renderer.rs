@@ -1,6 +1,6 @@
 use crate::{config::Config, PluginRenderers};
 use futures::{future::BoxFuture, FutureExt};
-use raqote::{DrawTarget, Image, IntRect};
+use raqote::{DrawOptions, DrawTarget, Image, IntRect, SolidSource};
 use shared::{
     timeline::types::api::{AvailablePlugins, CompressedEvent},
     types::Experience,
@@ -67,9 +67,16 @@ impl Renderer {
     ) -> DrawTarget {
         let mut resolved_events = Vec::new();
         Renderer::resolve_events((0., 0.), &mut resolved_events, events, size as f32);
-        println!("{:?}", resolved_events);
 
         let mut draw_target = DrawTarget::new(size, size);
+        draw_target.fill_rect(
+            0.,
+            0.,
+            size as f32,
+            size as f32,
+            &raqote::Source::Solid(SolidSource::from_unpremultiplied_argb(255, 0, 0, 0)),
+            &DrawOptions::new(),
+        );
 
         for render_request in resolved_events {
             let rendered_event = self
@@ -109,7 +116,6 @@ impl Renderer {
         mut events: Vec<(AvailablePlugins, &'b CompressedEvent)>,
         size: f32,
     ) {
-        println!("Resolve events call with {} events.", events.len());
         match events.len() {
             0 => (),
             1 => {
@@ -189,7 +195,6 @@ impl Renderer {
 
                 //fill top/bottom side
                 for po in 0..side_len {
-                    println!("po{}", po);
                     let pos = po;
                     let x = block_size * pos as f32;
                     let y = 0.;

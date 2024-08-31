@@ -6,6 +6,7 @@ use std::{
 };
 
 use chrono::Utc;
+use raqote::{DrawOptions, DrawTarget, Image};
 use shared::{
     timeline::types::api::{AvailablePlugins, CompressedEvent},
     types::{Experience, ExperienceError, ExperienceEvent, ExperienceResult},
@@ -300,9 +301,30 @@ impl ExperienceManager {
 
             local.block_on(&rt, async move {
                 let _ = tokio::task::spawn_local(async move {
-                    let dt = renderer.render_experience(&experience, 200).await;
+                    let dt = renderer.render_experience(&experience, 500).await;
                     if let Err(e) = dt.write_png(covers_folder.join(format!("{}.png", id))) {
                         eprintln!("Unable to save big cover: {}", e);
+                    }
+
+                    let mut small_dt = DrawTarget::new(100, 100);
+                    let pixel_data = dt.get_data();
+                    let image = Image {
+                        width: 500,
+                        height: 500,
+                        data: pixel_data,
+                    };
+                    small_dt.draw_image_with_size_at(
+                        100.,
+                        100.,
+                        0.,
+                        0.,
+                        &image,
+                        &DrawOptions::new(),
+                    );
+                    if let Err(e) =
+                        small_dt.write_png(covers_folder.join(format!("{}.small.png", id)))
+                    {
+                        eprintln!("Unable to save small cover: {}", e);
                     }
                 })
                 .await;

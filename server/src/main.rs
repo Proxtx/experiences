@@ -47,6 +47,7 @@ async fn rocket() -> _ {
                 experiences::delete_event,
                 experiences::change_visibility,
                 experiences::append_event,
+                experiences::cover,
                 api::navigator::get_connections,
                 api::navigator::get_position,
                 api::timeline_url,
