@@ -19,6 +19,7 @@ shared/Cargo.toml
 shared/Cargo.lock
 server/config.toml
 server/experiences
+server/covers
 experiences_navigator/Cargo.toml
 experiences_navigator/Cargo.lock
 

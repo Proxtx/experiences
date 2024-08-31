@@ -27,7 +27,7 @@ async fn rocket() -> _ {
     let config = config::Config::load()
         .await
         .unwrap_or_else(|e| panic!("Unable to init Config: {}", e));
-    let experience_manager = experience_manager::ExperienceManager::new(&config);
+    let experience_manager = experience_manager::ExperienceManager::new(&config).await;
 
     let figment = rocket::Config::figment().merge(("port", config.port));
     let mut rocket_state = rocket::custom(figment)

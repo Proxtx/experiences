@@ -2,6 +2,7 @@ use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     sync::Arc,
+    thread,
 };
 
 use chrono::Utc;
@@ -15,18 +16,20 @@ use tokio::{
     sync::RwLock,
 };
 
-use crate::config::Config;
+use crate::{config::Config, renderer::Renderer};
 
-pub struct ExperienceManager {
+pub struct ExperienceManager<'a> {
     folder: PathBuf,
     cache: RwLock<HashMap<String, Arc<RwLock<Experience>>>>,
+    renderer: Arc<Renderer<'a>>,
 }
 
-impl ExperienceManager {
-    pub fn new(config: &Config) -> Self {
+impl<'a> ExperienceManager<'a> {
+    pub async fn new(config: &Config) -> Self {
         ExperienceManager {
             folder: config.experiences_folder.clone(),
             cache: RwLock::new(HashMap::new()),
+            renderer: Arc::new(Renderer::new().await),
         }
     }
 
@@ -268,9 +271,20 @@ impl ExperienceManager {
 
     async fn write_experience(&self, id: &str, experience: &Experience) -> ExperienceResult<()> {
         let path = self.folder.join(format!("{}.experience.json", id));
-        match write(path, serde_json::to_string(experience)?).await {
+        let res = match write(path, serde_json::to_string(experience)?).await {
             Ok(_) => Ok(()),
             Err(e) => Err(ExperienceError::UnableToWrite(e.to_string())),
-        }
+        };
+        self.generate_experience_cover(id.to_string(), experience.clone())
+            .await;
+        res
+    }
+
+    async fn generate_experience_cover(&self, id: String, experience: Experience) {
+        let renderer = self.renderer.clone();
+
+        thread::spawn(move || {
+            renderer.render_experience(&experience, 200);
+        });
     }
 }

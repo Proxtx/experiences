@@ -27,7 +27,7 @@ pub mod experiences {
         id: &str,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<Experience>>> {
         let experience = match experience_manager.get_experience(id).await {
             Ok(v) => v,
@@ -61,7 +61,7 @@ pub mod experiences {
         request: Json<CreateExperienceRequest>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<String>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
@@ -82,7 +82,7 @@ pub mod experiences {
         request: Json<FavoriteRequest>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<()>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
@@ -108,7 +108,7 @@ pub mod experiences {
         request: Json<String>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<Option<(AvailablePlugins, ExperienceEvent)>>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
@@ -131,7 +131,7 @@ pub mod experiences {
         request: Json<bool>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<()>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
@@ -157,7 +157,7 @@ pub mod experiences {
         request: Json<(AvailablePlugins, CompressedEvent)>,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
     ) -> status::Custom<Json<APIResult<String>>> {
         if let Err(e) = auth(cookies, config) {
             return status::Custom(Status::Unauthorized, Json(Err(e)));
@@ -187,7 +187,7 @@ pub mod navigator {
         id: &str,
         config: &State<Config>,
         cookies: &CookieJar<'_>,
-        experience_manager: &State<ExperienceManager>,
+        experience_manager: &State<ExperienceManager<'_>>,
         navigator_position: &State<NavigatorPosition>,
     ) -> status::Custom<Json<APIResult<ExperienceConnectionResponse>>> {
         if let Err(e) = auth(cookies, config) {

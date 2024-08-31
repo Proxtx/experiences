@@ -14,6 +14,7 @@ pub struct Config {
     pub password: String,
     pub port: u16,
     pub experiences_folder: PathBuf,
+    pub covers_folder: PathBuf,
     pub timeline_url: Url,
 }
 
