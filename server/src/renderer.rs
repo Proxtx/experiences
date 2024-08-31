@@ -5,7 +5,7 @@ use shared::{
     timeline::types::api::{AvailablePlugins, CompressedEvent},
     types::Experience,
 };
-use std::{collections::HashMap, pin::Pin, sync::Arc};
+use std::{collections::HashMap, fmt::Debug, pin::Pin, sync::Arc};
 
 pub trait PluginRenderer: Send + Sync {
     fn new() -> impl std::future::Future<Output = Self> + Send
@@ -76,16 +76,27 @@ impl Renderer {
                 .render_event(
                     &render_request.plugin,
                     render_request.event,
-                    (render_request.width as i32, render_request.height as i32),
+                    (
+                        render_request.width.ceil() as i32,
+                        render_request.height.ceil() as i32,
+                    ),
                 )
                 .await;
             draw_target.copy_surface(
                 &rendered_event,
                 IntRect {
                     min: (0, 0).into(),
-                    max: (render_request.width as i32, render_request.height as i32).into(),
+                    max: (
+                        render_request.width.ceil() as i32,
+                        render_request.height.ceil() as i32,
+                    )
+                        .into(),
                 },
-                (render_request.x as i32, render_request.y as i32).into(),
+                (
+                    render_request.x.ceil() as i32,
+                    render_request.y.ceil() as i32,
+                )
+                    .into(),
             );
         }
 
@@ -165,8 +176,16 @@ impl Renderer {
                 });
             }
             len => {
-                let side_len = ((len as f32).sqrt().ceil()) as i32;
+                let side_len = if (10..=12).contains(&len) {
+                    3
+                } else if len == 5 {
+                    2
+                } else {
+                    ((len as f32).sqrt().ceil()) as i32
+                };
+
                 let block_size = size / side_len as f32;
+                let within_critical_range = (5..=8).contains(&len);
 
                 //fill top/bottom side
                 for po in 0..side_len {
@@ -176,7 +195,6 @@ impl Renderer {
                     let y = 0.;
                     let y2 = size - block_size;
                     let vt = events.pop().unwrap();
-                    let vt2 = events.pop().unwrap();
                     resolved_events.push(ResolvedEventRender {
                         x: transform.0 + x,
                         y: transform.1 + y,
@@ -186,24 +204,28 @@ impl Renderer {
                         event: vt.1,
                     });
 
-                    resolved_events.push(ResolvedEventRender {
-                        x: transform.0 + x,
-                        y: transform.1 + y2,
-                        width: block_size,
-                        height: block_size,
-                        plugin: vt2.0,
-                        event: vt2.1,
-                    });
+                    if !within_critical_range {
+                        let vt2 = events.pop().unwrap();
+                        resolved_events.push(ResolvedEventRender {
+                            x: transform.0 + x,
+                            y: transform.1 + y2,
+                            width: block_size,
+                            height: block_size,
+                            plugin: vt2.0,
+                            event: vt2.1,
+                        });
+                    }
                 }
 
+                let side_len_modifier = if within_critical_range { 0 } else { 1 };
+
                 //fill left/right side
-                for lpi in 1..(side_len - 1) {
-                    let pos = lpi - 1;
+                for lpi in 1..(side_len - side_len_modifier) {
+                    let pos = lpi;
                     let x = 0.;
                     let x2 = size - block_size;
                     let y = block_size * pos as f32;
                     let vt = events.pop().unwrap();
-                    let vt2 = events.pop().unwrap();
                     resolved_events.push(ResolvedEventRender {
                         x: transform.0 + x,
                         y: transform.1 + y,
@@ -213,28 +235,33 @@ impl Renderer {
                         event: vt.1,
                     });
 
-                    resolved_events.push(ResolvedEventRender {
-                        x: transform.0 + x2,
-                        y: transform.1 + y,
-                        width: block_size,
-                        height: block_size,
-                        plugin: vt2.0,
-                        event: vt2.1,
-                    });
+                    if !within_critical_range {
+                        let vt2 = events.pop().unwrap();
+                        resolved_events.push(ResolvedEventRender {
+                            x: transform.0 + x2,
+                            y: transform.1 + y,
+                            width: block_size,
+                            height: block_size,
+                            plugin: vt2.0,
+                            event: vt2.1,
+                        });
+                    }
                 }
+
+                let new_size_modifier = if within_critical_range { 1. } else { 2. };
 
                 Renderer::resolve_events(
                     (transform.0 + block_size, transform.1 + block_size),
                     resolved_events,
                     events,
-                    size - 2. * block_size,
+                    size - new_size_modifier * block_size,
                 )
             }
         };
     }
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 struct ResolvedEventRender<'a> {
     pub x: f32,
     pub y: f32,
@@ -242,4 +269,14 @@ struct ResolvedEventRender<'a> {
     pub height: f32,
     pub plugin: AvailablePlugins,
     pub event: &'a CompressedEvent,
+}
+
+impl<'a> Debug for ResolvedEventRender<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "X: {} Y: {} Width: {} Height: {}",
+            self.x, self.y, self.width, self.height
+        )
+    }
 }
