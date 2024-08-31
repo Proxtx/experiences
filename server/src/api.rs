@@ -230,17 +230,19 @@ pub mod navigator {
     ) -> status::Custom<Json<APIResult<ExperienceConnectionResponse>>> {
         match experience_manager.get_experience(id).await {
             Ok(v) => {
-                if v.public {
-                    return status::Custom(
-                        Status::Ok,
-                        Json(Ok(ExperienceConnectionResponse {
-                            public: true,
-                            connections: Vec::new(),
-                            experience_name: v.name,
-                        })),
-                    );
-                } else if let Err(e) = auth(cookies, config) {
-                    return status::Custom(Status::Unauthorized, Json(Err(e)));
+                if let Err(e) = auth(cookies, config) {
+                    if v.public {
+                        return status::Custom(
+                            Status::Ok,
+                            Json(Ok(ExperienceConnectionResponse {
+                                public: true,
+                                connections: Vec::new(),
+                                experience_name: v.name,
+                            })),
+                        );
+                    } else {
+                        return status::Custom(Status::Unauthorized, Json(Err(e)));
+                    };
                 }
 
                 *navigator_position.0.write().await = id.to_string();

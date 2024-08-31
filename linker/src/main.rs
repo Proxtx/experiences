@@ -27,7 +27,7 @@ async fn main() {
 
     str += &format!(
         "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
-        timeline_frontend = {{path = \"{}\", optional=true}}
+        timeline_frontend = {{path = \"{}\", features=[\"experiences\"], optional=true}}
         \n",
         timeline_directory.join("types").display(),
         timeline_directory.join("frontend").display()
