@@ -5,7 +5,7 @@ use shared::{
     timeline::types::api::{AvailablePlugins, CompressedEvent},
     types::Experience,
 };
-use std::{pin::Pin, sync::Arc};
+use std::{collections::HashMap, pin::Pin, sync::Arc};
 
 pub trait PluginRenderer: Send + Sync {
     fn new() -> impl std::future::Future<Output = Self> + Send
@@ -18,14 +18,14 @@ pub trait PluginRenderer: Send + Sync {
     ) -> Pin<Box<dyn std::future::Future<Output = Result<Vec<u32>, String>> + Send>>;
 }
 
-pub struct Renderer<'a> {
-    plugins: Arc<PluginRenderers<'a>>,
+pub struct Renderer {
+    plugins: HashMap<AvailablePlugins, Box<dyn PluginRenderer>>,
 }
 
-impl<'a> Renderer<'a> {
-    pub async fn new() -> Renderer<'a> {
+impl Renderer {
+    pub async fn new() -> Renderer {
         Renderer {
-            plugins: Arc::new(PluginRenderers::init().await),
+            plugins: PluginRenderers::init().await.renderers,
         }
     }
 
@@ -36,7 +36,7 @@ impl<'a> Renderer<'a> {
         dimensions: (i32, i32),
     ) -> DrawTarget {
         let mut draw_target = DrawTarget::new(dimensions.0, dimensions.1);
-        if let Some(renderer) = self.plugins.renderers.get(plugin) {
+        if let Some(renderer) = self.plugins.get(plugin) {
             match renderer.render(dimensions, event).await {
                 Ok(v) => {
                     draw_target = DrawTarget::from_vec(dimensions.0, dimensions.1, v);
@@ -48,7 +48,7 @@ impl<'a> Renderer<'a> {
         draw_target
     }
 
-    pub async fn render_experience(&self, experience: &Experience, size: i32) -> Vec<u32> {
+    pub async fn render_experience(&self, experience: &Experience, size: i32) -> DrawTarget {
         let mut favorites = Vec::new();
         for (plugin, events) in experience.events.iter() {
             for event in events.iter() {
@@ -57,7 +57,7 @@ impl<'a> Renderer<'a> {
                 }
             }
         }
-        self.render_events(size, favorites).await.into_vec()
+        self.render_events(size, favorites).await
     }
 
     pub async fn render_events(
@@ -67,6 +67,7 @@ impl<'a> Renderer<'a> {
     ) -> DrawTarget {
         let mut resolved_events = Vec::new();
         Renderer::resolve_events((0., 0.), &mut resolved_events, events, size as f32);
+        println!("{:?}", resolved_events);
 
         let mut draw_target = DrawTarget::new(size, size);
 
@@ -97,6 +98,7 @@ impl<'a> Renderer<'a> {
         mut events: Vec<(AvailablePlugins, &'b CompressedEvent)>,
         size: f32,
     ) {
+        println!("Resolve events call with {} events.", events.len());
         match events.len() {
             0 => (),
             1 => {
@@ -167,8 +169,9 @@ impl<'a> Renderer<'a> {
                 let block_size = size / side_len as f32;
 
                 //fill top/bottom side
-                for po in 1..side_len {
-                    let pos = po - 1;
+                for po in 0..side_len {
+                    println!("po{}", po);
+                    let pos = po;
                     let x = block_size * pos as f32;
                     let y = 0.;
                     let y2 = size - block_size;
@@ -194,7 +197,7 @@ impl<'a> Renderer<'a> {
                 }
 
                 //fill left/right side
-                for lpi in 2..(side_len - 1) {
+                for lpi in 1..(side_len - 1) {
                     let pos = lpi - 1;
                     let x = 0.;
                     let x2 = size - block_size;
@@ -231,6 +234,7 @@ impl<'a> Renderer<'a> {
     }
 }
 
+#[derive(Debug)]
 struct ResolvedEventRender<'a> {
     pub x: f32,
     pub y: f32,

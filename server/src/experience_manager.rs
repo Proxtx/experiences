@@ -13,23 +13,26 @@ use shared::{
 use tokio::{
     fs::{write, File},
     io::AsyncReadExt,
+    runtime::{self, Runtime},
     sync::RwLock,
 };
 
 use crate::{config::Config, renderer::Renderer};
 
-pub struct ExperienceManager<'a> {
-    folder: PathBuf,
+pub struct ExperienceManager {
+    experiences_folder: PathBuf,
+    covers_folder: PathBuf,
     cache: RwLock<HashMap<String, Arc<RwLock<Experience>>>>,
-    renderer: Arc<Renderer<'a>>,
+    renderer: Arc<Renderer>,
 }
 
-impl<'a> ExperienceManager<'a> {
+impl ExperienceManager {
     pub async fn new(config: &Config) -> Self {
         ExperienceManager {
-            folder: config.experiences_folder.clone(),
+            experiences_folder: config.experiences_folder.clone(),
             cache: RwLock::new(HashMap::new()),
             renderer: Arc::new(Renderer::new().await),
+            covers_folder: config.covers_folder.clone(),
         }
     }
 
@@ -43,7 +46,9 @@ impl<'a> ExperienceManager<'a> {
         match found_experience {
             Some(v) => Ok(v.read().await.clone()),
             None => {
-                let path = self.folder.join(format!("{}.experience.json", id));
+                let path = self
+                    .experiences_folder
+                    .join(format!("{}.experience.json", id));
                 let mut file = match File::open(path).await {
                     Ok(v) => v,
                     Err(e) => return Err(ExperienceError::NotFound(e.to_string())),
@@ -270,21 +275,38 @@ impl<'a> ExperienceManager<'a> {
     }
 
     async fn write_experience(&self, id: &str, experience: &Experience) -> ExperienceResult<()> {
-        let path = self.folder.join(format!("{}.experience.json", id));
+        let path = self
+            .experiences_folder
+            .join(format!("{}.experience.json", id));
         let res = match write(path, serde_json::to_string(experience)?).await {
             Ok(_) => Ok(()),
             Err(e) => Err(ExperienceError::UnableToWrite(e.to_string())),
         };
-        self.generate_experience_cover(id.to_string(), experience.clone())
-            .await;
+        self.generate_experience_cover(id.to_string(), experience.clone());
         res
     }
 
-    async fn generate_experience_cover(&self, id: String, experience: Experience) {
+    fn generate_experience_cover(&self, id: String, experience: Experience) {
         let renderer = self.renderer.clone();
+        let covers_folder = self.covers_folder.clone();
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
 
         thread::spawn(move || {
-            renderer.render_experience(&experience, 200);
+            let local = tokio::task::LocalSet::new();
+
+            local.block_on(&rt, async move {
+                let _ = tokio::task::spawn_local(async move {
+                    let dt = renderer.render_experience(&experience, 200).await;
+                    if let Err(e) = dt.write_png(covers_folder.join(format!("{}.png", id))) {
+                        eprintln!("Unable to save big cover: {}", e);
+                    }
+                })
+                .await;
+            });
         });
     }
 }
