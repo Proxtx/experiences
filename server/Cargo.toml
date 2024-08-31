@@ -21,3 +21,4 @@ shared = {path = "../shared", features = ["server"]}
 uuid = {version = "1.10.0", features = ["v4"]}
 raqote = "0.8.4"
 rand = "0.8.5"
+image = "0.25.2"
