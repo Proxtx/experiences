@@ -228,12 +228,21 @@ pub mod navigator {
         experience_manager: &State<ExperienceManager>,
         navigator_position: &State<NavigatorPosition>,
     ) -> status::Custom<Json<APIResult<ExperienceConnectionResponse>>> {
-        if let Err(e) = auth(cookies, config) {
-            return status::Custom(Status::Unauthorized, Json(Err(e)));
-        }
-
         match experience_manager.get_experience(id).await {
             Ok(v) => {
+                if v.public {
+                    return status::Custom(
+                        Status::Ok,
+                        Json(Ok(ExperienceConnectionResponse {
+                            public: true,
+                            connections: Vec::new(),
+                            experience_name: v.name,
+                        })),
+                    );
+                } else if let Err(e) = auth(cookies, config) {
+                    return status::Custom(Status::Unauthorized, Json(Err(e)));
+                }
+
                 *navigator_position.0.write().await = id.to_string();
                 let res = v
                     .events
