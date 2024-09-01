@@ -12,7 +12,9 @@ use shared::{
         api::{AvailablePlugins, CompressedEvent},
         timing::Timing,
     },
-    types::{Experience, ExperienceError, ExperienceEvent, ExperienceResult},
+    types::{
+        CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent, ExperienceResult,
+    },
 };
 use tokio::{
     fs::{write, File},
@@ -85,7 +87,8 @@ impl ExperienceManager {
                 event: CompressedEvent {
                     time,
                     title: name.clone(),
-                    data: serde_json::to_string(&id).unwrap(),
+                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(id.clone()))
+                        .unwrap(),
                 },
                 favorite: false,
                 id: id.clone(),
@@ -188,7 +191,9 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_b_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_string(&experience_b_id)?,
+                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(
+                        experience_b_id.clone(),
+                    ))?,
                     time: experience_b_time,
                     title: experience_b.name.clone(),
                 },
@@ -213,7 +218,9 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_a_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_string(&experience_a_id)?,
+                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(
+                        experience_a_id.clone(),
+                    ))?,
                     time: event.1.time,
                     title: experience_a.name.clone(),
                 },

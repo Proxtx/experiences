@@ -85,8 +85,6 @@ impl From<serde_json::Error> for ExperienceError {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CreateExperienceRequest {
-    pub name: String,
-    pub time: Timing,
-}
+pub use experiences_types_lib::types::CreateExperienceRequest;
+
+pub use experiences_types_lib::types::CompressedExperienceEvent;

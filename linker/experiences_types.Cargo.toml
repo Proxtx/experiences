@@ -8,8 +8,8 @@ edition = "2021"
 name = "experiences_types_lib"
 path = "src/lib.rs"
 
-[dependencies]
-serde = { version = "1.0.208", features = ["derive"] }
-
 [features]
 client = []
+
+[dependencies]
+serde = { version = "1.0.208", features = ["derive"] }

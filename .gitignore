@@ -22,5 +22,7 @@ server/experiences
 server/covers
 experiences_navigator/Cargo.toml
 experiences_navigator/Cargo.lock
+experiences_types/Cargo.toml
+experiences_types/Cargo.lock
 
 frontend/dist/

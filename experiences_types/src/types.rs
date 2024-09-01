@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use types::timing::Timing;
 
 #[cfg_attr(feature = "client", derive(Deserialize))]
 #[derive(Debug, Clone, Serialize)]
@@ -17,3 +18,15 @@ pub struct ExperienceConnectionResponse {
 
 #[derive(Deserialize, Serialize, Clone)]
 pub struct ExperiencesHostname(pub String);
+
+#[derive(Serialize, Deserialize)]
+pub enum CompressedExperienceEvent {
+    Experience(String),
+    Create,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateExperienceRequest {
+    pub name: String,
+    pub time: Timing,
+}
