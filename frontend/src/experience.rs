@@ -202,7 +202,10 @@ pub fn ExperienceView(
 
     view! {
         <EventsViewer<PluginExperienceEvent, GenTypeParam2>
-            events=Signal::derive(move || experience().events.into_iter().map(|(plg, event)| {(plg.clone(), event.into_iter().map(|event| {PluginExperienceEvent(plg.clone(), event)}).collect())}).collect::<HashMap<AvailablePlugins, Vec<PluginExperienceEvent>>>())
+            events=Signal::derive(move || experience().events.into_iter().map(|(plg, event)| {
+                let mut event = event.into_iter().map(|event| {PluginExperienceEvent(plg.clone(), event)}).collect::<Vec<_>>();
+                event.sort_by(|e1, e2| {e1.1.event.time.cmp(&e2.1.event.time)});
+                (plg.clone(), event)}).collect::<HashMap<AvailablePlugins, Vec<PluginExperienceEvent>>>())
             plugin_manager
             slide_over=Some(t)
         />

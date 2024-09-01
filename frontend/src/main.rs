@@ -10,7 +10,9 @@ use leptos_router::*;
 use shared::{
     standalone_experience_types::types::ExperiencesHostname,
     timeline::{
-        frontend::{plugin_manager::PluginManager, wrappers::Login},
+        frontend::{
+            events_display::DisplayWithDay, plugin_manager::PluginManager, wrappers::Login,
+        },
         types::api::TimelineHostname,
     },
 };
@@ -113,6 +115,9 @@ fn ExperienceView() -> impl IntoView {
     plugin_manager.dispatch(());
 
     let (navigator_expanded, write_navigator_expanded) = create_signal(true);
+
+    let display_width_day = DisplayWithDay(true);
+    provide_context(display_width_day);
 
     view! {
         <StyledView>
