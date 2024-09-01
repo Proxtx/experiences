@@ -115,7 +115,7 @@ pub fn Band(
         }
     };
     view! { class=style,
-        <div class="band" style:background-color=color on:click=click>
+        <div class="band" style:background-color=color on:click=click role="button">
             {children()}
         </div>
     }
