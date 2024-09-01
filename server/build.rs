@@ -11,7 +11,7 @@ fn main() {
     timeline_location_file
         .read_to_string(&mut timeline_location)
         .expect("Unable to read timeline location file!");
-
+    timeline_location = timeline_location.trim().to_string();
     let timeline_directory = PathBuf::from("../").join(PathBuf::from(timeline_location));
     let plugins_directory = timeline_directory.join("plugins");
 
