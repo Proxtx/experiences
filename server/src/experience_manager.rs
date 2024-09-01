@@ -8,7 +8,10 @@ use std::{
 use chrono::Utc;
 use raqote::{DrawOptions, DrawTarget, Image};
 use shared::{
-    timeline::types::api::{AvailablePlugins, CompressedEvent},
+    timeline::types::{
+        api::{AvailablePlugins, CompressedEvent},
+        timing::Timing,
+    },
     types::{Experience, ExperienceError, ExperienceEvent, ExperienceResult},
 };
 use tokio::{
@@ -73,8 +76,22 @@ impl ExperienceManager {
         }
     }
 
-    pub async fn create_experience(&self, name: String) -> ExperienceResult<String> {
+    pub async fn create_experience(&self, name: String, time: Timing) -> ExperienceResult<String> {
         let id = uuid::Uuid::new_v4().to_string();
+        let mut events = HashMap::new();
+        events.insert(
+            AvailablePlugins::timeline_plugin_experience,
+            ExperienceEvent {
+                event: CompressedEvent {
+                    time,
+                    title: name.clone(),
+                    data: serde_json::to_string(&id).unwrap(),
+                },
+                favorite: false,
+                id: id.clone(),
+            },
+        );
+
         let experience = Experience {
             name,
             events: HashMap::new(),
@@ -91,6 +108,11 @@ impl ExperienceManager {
         experience_id: &str,
         event_id: &str,
     ) -> ExperienceResult<Option<(AvailablePlugins, ExperienceEvent)>> {
+        if event_id == experience_id {
+            return Err(ExperienceError::OperationNowAllowed(
+                "Not allowed to delete experience from self".to_string(),
+            ));
+        }
         let res = self.delete_event_unchecked(experience_id, event_id).await?;
         if let Some(res) = &res
             && res.0 == AvailablePlugins::timeline_plugin_experience
@@ -152,12 +174,22 @@ impl ExperienceManager {
             let mut experience_a = self.get_experience(&experience_a_id).await?;
             let mut experience_b = self.get_experience(&experience_b_id).await?;
 
+            let experience_b_time = experience_b
+                .events
+                .get(&AvailablePlugins::timeline_plugin_experience)
+                .and_then(|v| {
+                    v.iter()
+                        .find(|v| v.id == experience_b_id)
+                        .map(|v| v.event.time.clone())
+                })
+                .unwrap_or(Timing::Instant(Utc::now()));
+
             let experience_a_experience_event = ExperienceEvent {
                 favorite: false,
                 id: experience_b_id.clone(),
                 event: CompressedEvent {
                     data: serde_json::to_string(&experience_b_id)?,
-                    time: shared::timeline::types::timing::Timing::Instant(Utc::now()),
+                    time: experience_b_time,
                     title: experience_b.name.clone(),
                 },
             };

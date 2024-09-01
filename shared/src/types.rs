@@ -1,6 +1,7 @@
 use std::{collections::HashMap, error, fmt, hash::Hash};
 
 use serde::{Deserialize, Serialize};
+use types::timing::Timing;
 
 use crate::timeline::types::api::{AvailablePlugins, CompressedEvent, EventWrapper};
 
@@ -54,6 +55,7 @@ pub enum ExperienceError {
     FileError(String),
     ParsingError(String),
     UnableToWrite(String),
+    OperationNowAllowed(String),
 }
 
 impl fmt::Display for ExperienceError {
@@ -65,6 +67,9 @@ impl fmt::Display for ExperienceError {
             }
             ExperienceError::ParsingError(v) => write!(f, "Unable to parse data: {}", v),
             ExperienceError::FileError(v) => write!(f, "Unable to read the file correctly: {}", v),
+            ExperienceError::OperationNowAllowed(v) => {
+                write!(f, "The performed operation is not allowed: {}", v)
+            }
         }
     }
 }
@@ -78,4 +83,10 @@ impl From<serde_json::Error> for ExperienceError {
     fn from(value: serde_json::Error) -> Self {
         ExperienceError::ParsingError(value.to_string())
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateExperienceRequest {
+    pub name: String,
+    pub time: Timing,
 }

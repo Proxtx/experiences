@@ -11,7 +11,7 @@ pub use {
     },
     shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
     shared::types::Experience,
-    shared::types::{ExperienceError, ExperienceEvent, FavoriteRequest},
+    shared::types::{CreateExperienceRequest, ExperienceError, ExperienceEvent, FavoriteRequest},
     tokio::sync::RwLock,
 };
 
@@ -20,6 +20,7 @@ use {crate::config::Config, rocket::response::Redirect, std::path::PathBuf};
 pub mod experiences {
     use rocket::http::ContentType;
     use rocket::response::content;
+    use shared::timeline::types::timing::Timing;
     use tokio::fs::File;
 
     use super::*;
@@ -55,11 +56,6 @@ pub mod experiences {
         }
     }
 
-    #[derive(Serialize, Deserialize)]
-    pub struct CreateExperienceRequest {
-        name: String,
-    }
-
     #[post("/experience/create", data = "<request>")]
     pub async fn create_experience(
         request: Json<CreateExperienceRequest>,
@@ -72,7 +68,7 @@ pub mod experiences {
         }
 
         match experience_manager
-            .create_experience(request.name.clone())
+            .create_experience(request.name.clone(), request.time.clone())
             .await
         {
             Ok(v) => status::Custom(Status::Ok, Json(Ok(v))),
@@ -251,9 +247,15 @@ pub mod navigator {
                     .get(&AvailablePlugins::timeline_plugin_experience)
                     .map(|v| {
                         v.iter()
-                            .map(|v| ExperienceConnection {
-                                name: v.event.title.clone(),
-                                id: v.id.clone(),
+                            .filter_map(|v| {
+                                if v.id != id {
+                                    Some(ExperienceConnection {
+                                        name: v.event.title.clone(),
+                                        id: v.id.clone(),
+                                    })
+                                } else {
+                                    None
+                                }
                             })
                             .collect::<Vec<_>>()
                     })
