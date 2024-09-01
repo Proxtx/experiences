@@ -1,14 +1,17 @@
 #![feature(let_chains)]
 
-use rocket::fs::FileServer;
-use rocket::response::content;
-use rocket::response::status;
-use rocket::Request;
-use rocket::{catch, catchers, routes};
-use shared::timeline::types::api::AvailablePlugins;
-use std::collections::HashMap;
-use tokio::fs::File;
-use tokio::io;
+use {
+    api::experiences,
+    rocket::{
+        catch, catchers,
+        fs::FileServer,
+        response::{content, status},
+        routes, Request,
+    },
+    shared::timeline::types::api::AvailablePlugins,
+    std::collections::HashMap,
+    tokio::{fs::File, io, sync::RwLock},
+};
 
 mod api;
 mod config;
@@ -19,9 +22,6 @@ use renderer::PluginRenderer;
 
 include!(concat!(env!("OUT_DIR"), "/plugins.rs"));
 
-use api::experiences;
-use tokio::sync::RwLock;
-
 #[rocket::launch]
 async fn rocket() -> _ {
     let config = config::Config::load()
@@ -30,7 +30,7 @@ async fn rocket() -> _ {
     let experience_manager = experience_manager::ExperienceManager::new(&config).await;
 
     let figment = rocket::Config::figment().merge(("port", config.port));
-    let mut rocket_state = rocket::custom(figment)
+    rocket::custom(figment)
         .register("/", catchers![not_found])
         .manage(config)
         .manage(experience_manager)
@@ -53,8 +53,7 @@ async fn rocket() -> _ {
                 api::timeline_url,
                 api::auth_request
             ],
-        );
-    rocket_state
+        )
 }
 
 #[catch(404)]

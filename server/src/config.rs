@@ -1,10 +1,6 @@
 use {
     serde::Deserialize,
-    std::{
-        collections::HashMap,
-        fmt,
-        path::{Path, PathBuf},
-    },
+    std::{fmt, path::PathBuf},
     tokio::{fs::File, io::AsyncReadExt},
     url::Url,
 };

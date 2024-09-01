@@ -1,19 +1,20 @@
 #![feature(type_alias_impl_trait)]
-use experiences_navigator_lib::{
-    api::api_request,
-    navigator::{Navigator, NavigatorOutput},
-    wrappers::{Error, Info, StyledView, TitleBar},
-};
-use html::Nav;
-use leptos::*;
-use leptos_router::*;
-use shared::{
-    standalone_experience_types::types::ExperiencesHostname,
-    timeline::{
-        frontend::{
-            events_display::DisplayWithDay, plugin_manager::PluginManager, wrappers::Login,
+use {
+    experiences_navigator_lib::{
+        api::api_request,
+        navigator::{Navigator, NavigatorOutput},
+        wrappers::{Error, Info, StyledView, TitleBar},
+    },
+    leptos::*,
+    leptos_router::*,
+    shared::{
+        standalone_experience_types::types::ExperiencesHostname,
+        timeline::{
+            frontend::{
+                events_display::DisplayWithDay, plugin_manager::PluginManager, wrappers::Login,
+            },
+            types::api::TimelineHostname,
         },
-        types::api::TimelineHostname,
     },
 };
 
@@ -65,29 +66,32 @@ fn Redirect() -> impl IntoView {
     });
     view! {
         <StyledView>
-            <TitleBar />
-            <Suspense fallback=move || view! {<Info>Navigating</Info>}>
-                {
-                    move || {
-                        error.map(|v| {
+            <TitleBar/>
+            <Suspense fallback=move || {
+                view! { <Info>Navigating</Info> }
+            }>
+
+                {move || {
+                    error
+                        .map(|v| {
                             match v {
                                 Some(e) => {
                                     let e = e.clone();
                                     view! {
-                                        <Error>Error loading Navigator Position: {e.to_string()}</Error>
+                                        <Error>
+                                            Error loading Navigator Position: {e.to_string()}
+                                        </Error>
                                         <Login update_authentication=write_update_authentication/>
-                                    }.into_view()
+                                    }
+                                        .into_view()
                                 }
                                 None => {
-                                    view! {
-                                        <Info>Redirecting</Info>
-                                    }
+                                    view! { <Info>Redirecting</Info> }
                                 }
                             }
-
                         })
-                    }
-                }
+                }}
+
             </Suspense>
         </StyledView>
     }
@@ -155,14 +159,16 @@ fn ExperienceView() -> impl IntoView {
                                             Some(v) => {
                                                 provide_context(v);
                                                 view! {
-                                                    <div style="height: 100%; overflow: auto;display: flex;flex-direction: column;" on:click=move |_| {write_navigator_expanded(false)}>
+                                                    <div
+                                                        style="height: 100%; overflow: auto;display: flex;flex-direction: column;"
+                                                        on:click=move |_| { write_navigator_expanded(false) }
+                                                    >
                                                         <experience::Experience id=experience_id></experience::Experience>
                                                     </div>
-                                                }.into_view()
+                                                }
+                                                    .into_view()
                                             }
-                                            None => {
-                                                view! { <Info>Loading</Info> }.into_view()
-                                            }
+                                            None => view! { <Info>Loading</Info> }.into_view(),
                                         }}
                                     }
                                         .into_view()

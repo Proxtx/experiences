@@ -1,7 +1,6 @@
 use std::{collections::HashMap, error, fmt, hash::Hash};
 
 use serde::{Deserialize, Serialize};
-use types::timing::Timing;
 
 use crate::timeline::types::api::{AvailablePlugins, CompressedEvent, EventWrapper};
 

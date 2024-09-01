@@ -1,11 +1,12 @@
-use crate::{config::Config, PluginRenderers};
-use futures::{future::BoxFuture, FutureExt};
-use raqote::{DrawOptions, DrawTarget, Image, IntRect, SolidSource};
-use shared::{
-    timeline::types::api::{AvailablePlugins, CompressedEvent},
-    types::Experience,
+use {
+    crate::PluginRenderers,
+    raqote::{DrawOptions, DrawTarget, IntRect, SolidSource},
+    shared::{
+        timeline::types::api::{AvailablePlugins, CompressedEvent},
+        types::Experience,
+    },
+    std::{collections::HashMap, fmt::Debug, pin::Pin},
 };
-use std::{collections::HashMap, fmt::Debug, pin::Pin, sync::Arc};
 
 pub trait PluginRenderer: Send + Sync {
     fn new() -> impl std::future::Future<Output = Self> + Send

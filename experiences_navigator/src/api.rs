@@ -5,6 +5,7 @@ use {
     types::api::APIResult,
     url::{ParseError, Url},
 };
+
 pub async fn api_request<T, V>(endpoint: &str, request: &V) -> APIResult<T>
 where
     T: serde::de::DeserializeOwned,

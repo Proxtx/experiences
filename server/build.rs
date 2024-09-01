@@ -18,7 +18,7 @@ fn main() {
     let mut out_path = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     out_path = out_path.join("out");
     out_path.set_file_name("plugins.rs");
-    let mut plugins: Vec<(String, String)> = fs::read_dir(plugins_directory)
+    let plugins: Vec<(String, String)> = fs::read_dir(plugins_directory)
         .expect("Plugins Folder not found.")
         .filter_map(|v| {
             let dir_entry = v.expect("unable to read directory");

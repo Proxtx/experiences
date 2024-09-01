@@ -1,12 +1,14 @@
-use ::core::f64;
-
-use crate::api::{api_request, relative_url};
-use crate::wrappers::Band;
-use experiences_types_lib::types::ExperienceConnectionResponse;
-use leptos::*;
-use leptos_use::*;
-use serde::Deserialize;
-use stylers::style;
+use {
+    crate::{
+        api::{api_request, relative_url},
+        wrappers::Band,
+    },
+    ::core::f64,
+    experiences_types_lib::types::ExperienceConnectionResponse,
+    leptos::*,
+    leptos_use::*,
+    stylers::style,
+};
 
 #[component]
 pub fn StandaloneNavigator(

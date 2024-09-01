@@ -1,26 +1,22 @@
-use std::{
-    collections::{HashMap, HashSet},
-    path::{Path, PathBuf},
-    sync::Arc,
-    thread,
-};
-
-use chrono::Utc;
-use raqote::{DrawOptions, DrawTarget, Image};
-use shared::{
-    timeline::types::{
-        api::{AvailablePlugins, CompressedEvent},
-        timing::Timing,
+use {
+    chrono::Utc,
+    raqote::{DrawOptions, DrawTarget, Image},
+    shared::{
+        timeline::types::{
+            api::{AvailablePlugins, CompressedEvent},
+            timing::Timing,
+        },
+        types::{
+            CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent,
+            ExperienceResult,
+        },
     },
-    types::{
-        CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent, ExperienceResult,
+    std::{collections::HashMap, path::PathBuf, sync::Arc, thread},
+    tokio::{
+        fs::{write, File},
+        io::AsyncReadExt,
+        sync::RwLock,
     },
-};
-use tokio::{
-    fs::{write, File},
-    io::AsyncReadExt,
-    runtime::{self, Runtime},
-    sync::RwLock,
 };
 
 use crate::{config::Config, renderer::Renderer};

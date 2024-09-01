@@ -1,31 +1,28 @@
 pub use {
-    rocket::get,
-    rocket::http::{CookieJar, Status},
-    rocket::post,
-    rocket::response::status,
-    rocket::serde::json::Json,
-    rocket::State,
-    serde::{Deserialize, Serialize},
-    shared::standalone_experience_types::types::{
-        ExperienceConnection, ExperienceConnectionResponse,
+    crate::config::Config,
+    rocket::{
+        get,
+        http::{ContentType, CookieJar, Status},
+        post,
+        response::status,
+        serde::json::Json,
+        State,
     },
-    shared::timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
-    shared::types::Experience,
-    shared::types::{CreateExperienceRequest, ExperienceError, ExperienceEvent, FavoriteRequest},
-    tokio::sync::RwLock,
+    shared::{
+        standalone_experience_types::types::{ExperienceConnection, ExperienceConnectionResponse},
+        timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
+        types::{
+            CreateExperienceRequest, Experience, ExperienceError, ExperienceEvent, FavoriteRequest,
+        },
+    },
+    tokio::{fs::File, sync::RwLock},
 };
 
-use {crate::config::Config, rocket::response::Redirect, std::path::PathBuf};
-
 pub mod experiences {
-    use rocket::http::ContentType;
-    use rocket::response::content;
-    use shared::timeline::types::timing::Timing;
-    use tokio::fs::File;
-
-    use super::*;
-    use crate::config::Config;
-    use crate::experience_manager::ExperienceManager;
+    use {
+        super::*,
+        crate::{config::Config, experience_manager::ExperienceManager},
+    };
 
     #[post("/experience/<id>")]
     pub async fn get_experience(
@@ -210,9 +207,10 @@ pub mod experiences {
 }
 
 pub mod navigator {
-    use super::*;
-    use crate::config::Config;
-    use crate::experience_manager::ExperienceManager;
+    use {
+        super::*,
+        crate::{config::Config, experience_manager::ExperienceManager},
+    };
 
     pub struct NavigatorPosition(pub RwLock<String>);
 

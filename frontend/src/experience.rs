@@ -1,20 +1,21 @@
 use std::collections::HashMap;
 
-use experiences_navigator_lib::{
-    api::api_request,
-    navigator::StandaloneNavigator,
-    wrappers::{Band, Error, Info, StyledView},
+use {
+    experiences_navigator_lib::{
+        api::api_request,
+        navigator::StandaloneNavigator,
+        wrappers::{Band, Error, Info, StyledView},
+    },
+    leptos::*,
+    shared::{
+        timeline::{
+            frontend::{events_display::EventsViewer, plugin_manager::PluginManager},
+            types::api::AvailablePlugins,
+        },
+        types::{Experience, ExperienceEvent, PluginExperienceEvent},
+    },
+    std::sync::Arc,
 };
-use leptos::*;
-use shared::timeline::frontend::plugin_manager::PluginManager;
-use shared::types::Experience;
-use shared::types::ExperienceEvent;
-use shared::{
-    timeline::{frontend::events_display::EventsViewer, types::api::AvailablePlugins},
-    types::PluginExperienceEvent,
-};
-use std::sync::Arc;
-use stylers::style;
 
 #[component]
 pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
@@ -100,13 +101,7 @@ pub fn ExperienceView(
                                     if let Err(e) = experiences_navigator_lib::api::api_request::<
                                         Option<(AvailablePlugins, ExperienceEvent)>,
                                         _,
-                                    >(
-                                            &format!(
-                                                "/experience/{}/delete",
-                                                id,
-                                            ),
-                                            &event.1.id,
-                                        )
+                                    >(&format!("/experience/{}/delete", id), &event.1.id)
                                         .await
                                     {
                                         window()
@@ -136,10 +131,7 @@ pub fn ExperienceView(
                                         (),
                                         _,
                                     >(
-                                            &format!(
-                                                "/experience/{}/favorite",
-                                                id
-                                            ),
+                                            &format!("/experience/{}/favorite", id),
                                             &shared::types::FavoriteRequest {
                                                 event_id: event.1.id,
                                                 favorite: !event.1.favorite,

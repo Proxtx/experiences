@@ -1,5 +1,7 @@
-use serde::{Deserialize, Serialize};
-use types::timing::Timing;
+use {
+    serde::{Deserialize, Serialize},
+    types::timing::Timing,
+};
 
 #[cfg_attr(feature = "client", derive(Deserialize))]
 #[derive(Debug, Clone, Serialize)]
