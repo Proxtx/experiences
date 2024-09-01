@@ -22,7 +22,7 @@ pub struct ExperiencesHostname(pub String);
 #[derive(Serialize, Deserialize)]
 pub enum CompressedExperienceEvent {
     Experience(String),
-    Create,
+    Create(Timing),
 }
 
 #[derive(Serialize, Deserialize)]

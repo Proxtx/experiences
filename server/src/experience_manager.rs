@@ -83,7 +83,7 @@ impl ExperienceManager {
         let mut events = HashMap::new();
         events.insert(
             AvailablePlugins::timeline_plugin_experience,
-            ExperienceEvent {
+            vec![ExperienceEvent {
                 event: CompressedEvent {
                     time,
                     title: name.clone(),
@@ -92,12 +92,12 @@ impl ExperienceManager {
                 },
                 favorite: false,
                 id: id.clone(),
-            },
+            }],
         );
 
         let experience = Experience {
             name,
-            events: HashMap::new(),
+            events,
             public: false,
         };
 
@@ -172,7 +172,13 @@ impl ExperienceManager {
         event: (AvailablePlugins, CompressedEvent),
     ) -> ExperienceResult<String> {
         if event.0 == AvailablePlugins::timeline_plugin_experience {
-            let experience_a_id: String = serde_json::from_str(&event.1.data)?;
+            let experience_a_id: String =
+                match serde_json::from_str::<CompressedExperienceEvent>(&event.1.data)? {
+                    CompressedExperienceEvent::Experience(v) => v,
+                    CompressedExperienceEvent::Create(_v) => {
+                        return self.append_event_unchecked(experience_id, event).await
+                    }
+                };
             let experience_b_id: String = experience_id.to_string();
             let mut experience_a = self.get_experience(&experience_a_id).await?;
             let mut experience_b = self.get_experience(&experience_b_id).await?;

@@ -19,7 +19,9 @@ use stylers::style;
 #[component]
 pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
     let experience = create_resource(id.clone(), |id: String| async move {
-        api_request::<Experience, _>(&format!("/experience/{}", id), &()).await
+        api_request::<Experience, _>(&format!("/experience/{}", id), &())
+            .await
+            .map(|v| (id, v))
     });
 
     view! {
@@ -29,9 +31,10 @@ pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
             {move || {
                 experience()
                     .map(|experience_loaded| match experience_loaded {
-                        Ok(v) => {
+                        Ok((id, v)) => {
                             view! {
                                 <ExperienceView
+                                    id
                                     experience=v
                                     reload=Callback::new(move |_| {
                                         experience.refetch();
@@ -55,6 +58,7 @@ pub fn Experience(#[prop(into)] id: MaybeSignal<String>) -> impl IntoView {
 
 #[component]
 pub fn ExperienceView(
+    #[prop(into)] id: MaybeSignal<String>,
     #[prop(into)] experience: MaybeSignal<Experience>,
     reload: Callback<(), ()>,
 ) -> impl IntoView {
@@ -71,6 +75,8 @@ pub fn ExperienceView(
         let close_callback_4 = close_callback.clone();
         let event_2 = event.clone();
         let event_3 = event.clone();
+        let id = id.clone();
+        let id_2 = id.clone();
 
         let (expanded, write_expanded) = create_signal(false);
 
@@ -86,8 +92,8 @@ pub fn ExperienceView(
                         color="var(--accentColor2)".to_string()
                         click=Callback::new(move |_| {
                             spawn_local({
+                                let id = id();
                                 let close_callback = close_callback_4.clone();
-                                let selected_experience = selected_experience();
                                 let event = event_3.clone();
                                 async move {
                                     close_callback();
@@ -97,7 +103,7 @@ pub fn ExperienceView(
                                     >(
                                             &format!(
                                                 "/experience/{}/delete",
-                                                selected_experience.unwrap(),
+                                                id,
                                             ),
                                             &event.1.id,
                                         )
@@ -121,8 +127,8 @@ pub fn ExperienceView(
                         color="var(--accentColor1)".to_string()
                         click=Callback::new(move |_| {
                             spawn_local({
+                                let id = id_2();
                                 let close_callback = close_callback_3.clone();
-                                let selected_experience = selected_experience();
                                 let event = event_2.clone();
                                 async move {
                                     close_callback();
@@ -132,7 +138,7 @@ pub fn ExperienceView(
                                     >(
                                             &format!(
                                                 "/experience/{}/favorite",
-                                                selected_experience.unwrap(),
+                                                id
                                             ),
                                             &shared::types::FavoriteRequest {
                                                 event_id: event.1.id,
