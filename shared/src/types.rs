@@ -15,9 +15,6 @@ impl EventWrapper for ExperienceEvent {
     fn get_compressed_event(&self) -> CompressedEvent {
         self.event.clone()
     }
-    fn hash(&self, hasher: &mut impl std::hash::Hasher) {
-        self.id.hash(hasher)
-    }
 }
 
 #[derive(PartialEq, Debug, Clone)]
@@ -26,10 +23,6 @@ pub struct PluginExperienceEvent(pub AvailablePlugins, pub ExperienceEvent);
 impl EventWrapper for PluginExperienceEvent {
     fn get_compressed_event(&self) -> CompressedEvent {
         self.1.get_compressed_event()
-    }
-
-    fn hash(&self, hasher: &mut impl std::hash::Hasher) {
-        self.1.hash(hasher)
     }
 }
 
