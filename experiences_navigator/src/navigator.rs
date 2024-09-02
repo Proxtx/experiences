@@ -169,6 +169,10 @@ pub fn Navigator(
             height: 0%;
             opacity: 0;
         }
+
+        .collapsedConnections > * {
+            pointer-events: none;
+        }
     };
 
     let expanded = create_memo(move |_| expanded());
@@ -222,6 +226,17 @@ pub fn Navigator(
                                                         + (width / 2.0 - x()).powf(2.0))
                                                         .sqrt()
                                                 };
+                                                let connection_rotation = move || {
+                                                    let height = read_height();
+                                                    let width = read_width();
+                                                    let relative_y = y() - height / 2.0;
+                                                    let relative_x = x() - width / 2.0;
+
+                                                    let mut res = (-1.0 * (relative_y) / ((relative_x).powi(2) + (relative_y).powi(2)).sqrt()).acos() * (180. as f64 / f64::consts::PI);
+                                                    if relative_x < 0. {res += (180. - res) * 2.}
+                                                    res - 90.
+                                                };
+
                                                 let connection_id = connection.id.clone();
                                                 view! { class=style,
                                                     <div
@@ -241,7 +256,7 @@ pub fn Navigator(
                                                     <div
                                                         class="connection"
                                                         style:width=move || format!("{}px", connection_len())
-                                                        style:transform=move || { format!("rotate({}deg)", deg) }
+                                                        style:transform=move || { format!("rotate({}deg)", connection_rotation()) }
                                                     ></div>
                                                 }
                                             })
