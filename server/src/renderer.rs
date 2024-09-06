@@ -1,11 +1,12 @@
 use {
     crate::PluginRenderers,
+    image::Pixel,
     raqote::{DrawOptions, DrawTarget, IntRect, SolidSource},
     shared::{
-        timeline::types::api::{AvailablePlugins, CompressedEvent},
+        timeline::types::api::{APIResult, AvailablePlugins, CompressedEvent},
         types::Experience,
     },
-    std::{collections::HashMap, fmt::Debug, pin::Pin},
+    std::{collections::HashMap, fmt::Debug, path::Path, pin::Pin},
 };
 
 pub trait PluginRenderer: Send + Sync {
@@ -287,7 +288,7 @@ impl<'a> Debug for ResolvedEventRender<'a> {
     }
 }
 
-pub async fn render_image(path: &Path) -> DrawTarget {
+pub async fn render_image(dimensions: (i32, i32), path: &Path) -> Result<DrawTarget, String> {
     let mut target = DrawTarget::new(dimensions.0, dimensions.1);
     let mut img = match image::ImageReader::open(std::path::PathBuf::from(path)) {
         Ok(v) => match v.decode() {
