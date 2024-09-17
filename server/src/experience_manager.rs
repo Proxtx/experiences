@@ -25,7 +25,7 @@ pub struct ExperienceManager {
     experiences_folder: PathBuf,
     covers_folder: PathBuf,
     cache: RwLock<HashMap<String, Arc<RwLock<Experience>>>>,
-    renderer: Arc<Renderer>,
+    pub renderer: Arc<Renderer>,
 }
 
 impl ExperienceManager {

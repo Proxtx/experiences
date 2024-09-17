@@ -62,6 +62,65 @@ impl Renderer {
         self.render_events(size, favorites).await
     }
 
+    pub async fn render_entire_experience(&self, experience: &Experience, size: i32) -> DrawTarget {
+        let mut events = experience
+            .events
+            .iter()
+            .flat_map(|(k, v)| v.iter().map(|v| (k.clone(), &v.event)).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        let mut target = DrawTarget::new(size, size);
+
+        loop {
+            let mut resolved_events = Vec::new();
+            Renderer::resolve_events((0., 0.), &mut resolved_events, events.clone(), size as f32);
+
+            target.fill_rect(
+                0.,
+                0.,
+                size as f32,
+                size as f32,
+                &raqote::Source::Solid(SolidSource::from_unpremultiplied_argb(255, 0, 0, 0)),
+                &DrawOptions::new(),
+            );
+
+            let mut failed_events = Vec::new();
+
+            for render_request in resolved_events {
+                let lc_dimensions = (
+                    render_request.width.ceil() as i32,
+                    render_request.height.ceil() as i32,
+                );
+                if let Some(renderer) = self.plugins.get(&render_request.plugin) {
+                    if let Ok(v) = renderer.render(lc_dimensions, render_request.event).await {
+                        let event_target =
+                            DrawTarget::from_vec(lc_dimensions.0, lc_dimensions.1, v);
+                        target.copy_surface(
+                            &event_target,
+                            IntRect {
+                                min: (0, 0).into(),
+                                max: lc_dimensions.into(),
+                            },
+                            (
+                                render_request.x.ceil() as i32,
+                                render_request.y.ceil() as i32,
+                            )
+                                .into(),
+                        );
+                        continue;
+                    }
+                }
+                failed_events.push(render_request.event);
+            }
+            if !failed_events.is_empty() {
+                events.retain(|(_, v)| !failed_events.contains(v));
+            } else {
+                break;
+            };
+        }
+
+        target
+    }
+
     pub async fn render_events(
         &self,
         size: i32,

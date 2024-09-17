@@ -48,6 +48,7 @@ async fn rocket() -> _ {
                 experiences::change_visibility,
                 experiences::append_event,
                 experiences::cover,
+                experiences::entire_experience_cover,
                 api::navigator::get_connections,
                 api::navigator::get_position,
                 api::timeline_url,

@@ -22,6 +22,8 @@ pub mod experiences {
     use {
         super::*,
         crate::{config::Config, experience_manager::ExperienceManager},
+        image::{codecs::png::PngEncoder, ExtendedColorType, ImageEncoder},
+        std::thread,
     };
 
     #[post("/experience/<id>")]
@@ -168,6 +170,76 @@ pub mod experiences {
                 }
                 _ => status::Custom(Status::InternalServerError, Json(Err(e.into()))),
             },
+        }
+    }
+
+    #[get("/experience/<id>/cover/<size>/all")]
+    pub async fn entire_experience_cover(
+        id: &str,
+        size: u32,
+        config: &State<Config>,
+        cookies: &CookieJar<'_>,
+        experience_manager: &State<ExperienceManager>,
+    ) -> status::Custom<Option<(ContentType, Vec<u8>)>> {
+        let experience = match experience_manager.get_experience(id).await {
+            Ok(v) => v,
+            Err(e) => {
+                return match &e {
+                    ExperienceError::NotFound(_) => status::Custom(Status::NotFound, None),
+                    _ => status::Custom(Status::InternalServerError, None),
+                }
+            }
+        };
+
+        if !experience.public
+            && let Err(_e) = auth(cookies, config)
+        {
+            return status::Custom(Status::Unauthorized, None);
+        }
+
+        let renderer = experience_manager.renderer.clone();
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+
+        let image = thread::spawn(move || {
+            let local = tokio::task::LocalSet::new();
+
+            local.block_on(&rt, async move {
+                tokio::task::spawn_local(async move {
+                    let mut image: Vec<u8> = Vec::new();
+                    let encoder = PngEncoder::new(&mut image);
+                    let data = renderer
+                        .render_entire_experience(&experience, size as i32)
+                        .await
+                        .into_vec();
+                    let data = data
+                        .into_iter()
+                        .flat_map(|v| {
+                            let bts = v.to_le_bytes();
+                            let r = bts[2];
+                            let g = bts[1];
+                            let b = bts[0];
+                            let a = bts[3];
+                            vec![r, g, b, a]
+                        })
+                        .collect::<Vec<u8>>();
+                    let _ = encoder.write_image(&data, size, size, ExtendedColorType::Rgba8);
+                    image
+                })
+                .await
+            })
+        })
+        .join();
+
+        if let Ok(outer) = image
+            && let Ok(inner) = outer
+        {
+            status::Custom(Status::Ok, Some((ContentType::PNG, inner)))
+        } else {
+            status::Custom(Status::InternalServerError, None)
         }
     }
 
