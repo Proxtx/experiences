@@ -281,10 +281,7 @@ pub mod experiences {
 pub mod navigator {
     use {
         super::*,
-        crate::{
-            config::Config,
-            experience_manager::{self, ExperienceManager},
-        },
+        crate::{config::Config, experience_manager::ExperienceManager},
     };
 
     pub struct NavigatorPosition(pub RwLock<String>);
@@ -301,28 +298,25 @@ pub mod navigator {
             Ok(v) => {
                 if let Err(e) = auth(cookies, config) {
                     if v.public {
-                        let connections = v
-                            .events
-                            .get(&AvailablePlugins::timeline_plugin_experience)
-                            .map(|v| {
-                                v.iter()
-                                    .filter_map(
-                                        if v.id != id
-                                            && let Ok(exp) =
-                                                experience_manager.get_experience(v.id).await
-                                            && exp.public
-                                        {
-                                            Some(ExperienceConnection {
-                                                name: v.event.title.clone(),
-                                                id: v.id.clone(),
-                                            })
-                                        } else {
-                                            None
-                                        },
-                                    )
-                                    .collect::<Vec<_>>()
-                            })
-                            .unwrap_or(Vec::new());
+                        let mut connections = Vec::new();
+                        if let Some(connected_experiences) =
+                            v.events.get(&AvailablePlugins::timeline_plugin_experience)
+                        {
+                            {
+                                for experience in connected_experiences {
+                                    if experience.id != id
+                                        && let Ok(exp) =
+                                            experience_manager.get_experience(&experience.id).await
+                                        && exp.public
+                                    {
+                                        connections.push(ExperienceConnection {
+                                            id: experience.id.clone(),
+                                            name: exp.name,
+                                        });
+                                    }
+                                }
+                            }
+                        }
                         return status::Custom(
                             Status::Ok,
                             Json(Ok(ExperienceConnectionResponse {
