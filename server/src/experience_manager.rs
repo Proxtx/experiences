@@ -133,16 +133,24 @@ impl ExperienceManager {
     ) -> ExperienceResult<Option<(AvailablePlugins, ExperienceEvent)>> {
         let mut experience = self.get_experience(experience_id).await?;
         let mut deleted_event = None;
+        let mut deleted_event_plugin = None;
         experience.events.iter_mut().for_each(|v| {
             v.1.retain(|event| {
                 if event.id == event_id {
                     deleted_event = Some((v.0.clone(), event.clone()));
+                    deleted_event_plugin = Some(v.0.clone());
                     false
                 } else {
                     true
                 }
             })
         });
+        if let Some(deleted_event_plugin) = deleted_event_plugin
+            && let Some(events) = experience.events.get(&deleted_event_plugin)
+            && events.is_empty()
+        {
+            experience.events.remove(&deleted_event_plugin);
+        }
         self.save_experience(experience_id, experience).await?;
         Ok(deleted_event)
     }
