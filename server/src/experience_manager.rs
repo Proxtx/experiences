@@ -152,9 +152,6 @@ impl ExperienceManager {
             experience.events.remove(&deleted_event_plugin);
         }
 
-        //this is a temporary fix and will/should be discontinued!!!
-        experience.events.retain(|_k, v| !v.is_empty());
-
         self.save_experience(experience_id, experience).await?;
         Ok(deleted_event)
     }
