@@ -23,7 +23,7 @@ pub mod experiences {
         super::*,
         crate::{config::Config, experience_manager::ExperienceManager},
         image::{codecs::png::PngEncoder, ExtendedColorType, ImageEncoder},
-        std::thread,
+        std::{path::PathBuf, thread},
     };
 
     #[post("/experience/<id>")]
@@ -262,9 +262,15 @@ pub mod experiences {
         };
 
         if !experience.public
-            && let Err(_e) = auth(cookies, config)
+            && let Err(e) = auth(cookies, config)
         {
-            return status::Custom(Status::Unauthorized, None);
+            return status::Custom(
+                Status::Unauthorized,
+                Some((
+                    ContentType::PNG,
+                    File::open(PathBuf::from("../frontend/icons/logo.png")).await,
+                )),
+            );
         }
 
         let mut path = config.covers_folder.clone();
