@@ -10,7 +10,7 @@ use {
     shared::{
         timeline::{
             frontend::{events_display::EventsViewer, plugin_manager::PluginManager},
-            types::api::AvailablePlugins,
+            types::available_plugins::AvailablePlugins,
         },
         types::{Experience, ExperienceEvent, PluginExperienceEvent},
     },
@@ -116,7 +116,7 @@ pub fn ExperienceView(
                         })
                     >
 
-                        <img src="/icons/delete.svg"/>
+                        <img src="/icons/delete.svg" />
                     </Band>
                     <Band
                         color="var(--accentColor1)".to_string()
@@ -157,11 +157,11 @@ pub fn ExperienceView(
                             } else {
                                 "/icons/starOutline.svg"
                             }
-                        }/>
+                        } />
                     </Band>
                 </div>
                 <div on:click=move |_| write_expanded(true)>
-                    <StandaloneNavigator expanded selected_experience=selected_experience/>
+                    <StandaloneNavigator expanded selected_experience=selected_experience />
                 </div>
                 <Band click=Callback::new(move |_| {
                     spawn_local({
@@ -199,11 +199,24 @@ pub fn ExperienceView(
     };
 
     view! {
-        <EventsViewer<PluginExperienceEvent, GenTypeParam2>
-            events=Signal::derive(move || experience().events.into_iter().map(|(plg, event)| {
-                let mut event = event.into_iter().map(|event| {PluginExperienceEvent(plg.clone(), event)}).collect::<Vec<_>>();
-                event.sort_by(|e1, e2| {e1.1.event.time.cmp(&e2.1.event.time)});
-                (plg.clone(), event)}).collect::<HashMap<AvailablePlugins, Vec<PluginExperienceEvent>>>())
+        <EventsViewer<
+        PluginExperienceEvent,
+        GenTypeParam2,
+    >
+            events=Signal::derive(move || {
+                experience()
+                    .events
+                    .into_iter()
+                    .map(|(plg, event)| {
+                        let mut event = event
+                            .into_iter()
+                            .map(|event| { PluginExperienceEvent(plg.clone(), event) })
+                            .collect::<Vec<_>>();
+                        event.sort_by(|e1, e2| { e1.1.event.time.cmp(&e2.1.event.time) });
+                        (plg.clone(), event)
+                    })
+                    .collect::<HashMap<AvailablePlugins, Vec<PluginExperienceEvent>>>()
+            })
             plugin_manager
             slide_over=Some(t)
         />
