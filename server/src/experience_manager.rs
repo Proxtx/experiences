@@ -3,8 +3,9 @@ use {
     raqote::{DrawOptions, DrawTarget, Image},
     shared::{
         timeline::types::{
-            api::{AvailablePlugins, CompressedEvent},
+            api::CompressedEvent,
             timing::Timing,
+            available_plugins::AvailablePlugins
         },
         types::{
             CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent,
@@ -83,7 +84,7 @@ impl ExperienceManager {
                 event: CompressedEvent {
                     time,
                     title: name.clone(),
-                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(id.clone()))
+                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(id.clone()))
                         .unwrap(),
                 },
                 favorite: false,
@@ -117,7 +118,7 @@ impl ExperienceManager {
             && res.0 == AvailablePlugins::timeline_plugin_experience
         {
             let connected_to_experience: CompressedExperienceEvent =
-                serde_json::from_str(&res.1.event.data)?;
+                serde_json::from_value(res.1.event.data.clone())?;
             if let CompressedExperienceEvent::Experience(id) = connected_to_experience {
                 self.delete_event_unchecked(&id, experience_id)
                     .await.unwrap_or_else(|e| panic!("Unable to delete a connection: Deleting the connection from the counterpart failed: {}. This is my experience id: {}. This is the experience id of the counter part: {}", e, experience_id, id));
@@ -181,7 +182,7 @@ impl ExperienceManager {
     ) -> ExperienceResult<String> {
         if event.0 == AvailablePlugins::timeline_plugin_experience {
             let experience_a_id: String =
-                match serde_json::from_str::<CompressedExperienceEvent>(&event.1.data)? {
+                match serde_json::from_value::<CompressedExperienceEvent>(event.1.data.clone())? {
                     CompressedExperienceEvent::Experience(v) => v,
                     CompressedExperienceEvent::Create(_v) => {
                         return self.append_event_unchecked(experience_id, event).await
@@ -205,7 +206,7 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_b_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(
+                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(
                         experience_b_id.clone(),
                     ))?,
                     time: experience_b_time,
@@ -232,7 +233,7 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_a_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_string(&CompressedExperienceEvent::Experience(
+                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(
                         experience_a_id.clone(),
                     ))?,
                     time: event.1.time,

@@ -10,7 +10,8 @@ pub use {
     },
     shared::{
         standalone_experience_types::types::{ExperienceConnection, ExperienceConnectionResponse},
-        timeline::types::api::{APIError, APIResult, AvailablePlugins, CompressedEvent},
+        timeline::types::api::{APIError, APIResult, CompressedEvent},
+        timeline::types::available_plugins::AvailablePlugins,
         types::{
             CreateExperienceRequest, Experience, ExperienceError, ExperienceEvent, FavoriteRequest,
         },

@@ -3,8 +3,9 @@ use {
     image::Pixel,
     raqote::{DrawOptions, DrawTarget, IntRect, SolidSource},
     shared::{
-        timeline::types::api::{AvailablePlugins, CompressedEvent},
+        timeline::types::api::CompressedEvent,
         types::Experience,
+        timeline::types::available_plugins::AvailablePlugins
     },
     std::{collections::HashMap, fmt::Debug, path::Path, pin::Pin},
 };

@@ -8,7 +8,7 @@ use {
         response::{content, status},
         routes, Request,
     },
-    shared::timeline::types::api::AvailablePlugins,
+    shared::timeline::types::available_plugins::AvailablePlugins,
     std::collections::HashMap,
     tokio::{fs::File, io, sync::RwLock},
 };
