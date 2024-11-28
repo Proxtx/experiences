@@ -18,8 +18,7 @@ pub struct ExperienceConnectionResponse {
     pub public: bool,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-pub struct ExperiencesHostname(pub String);
+pub use types::api::ExperiencesHostname;
 
 #[derive(Serialize, Deserialize)]
 pub enum CompressedExperienceEvent {
