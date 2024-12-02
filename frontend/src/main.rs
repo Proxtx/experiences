@@ -23,7 +23,7 @@ mod experience;
 fn main() {
     console_error_panic_hook::set_once();
     mount_to_body(|| {
-        view! { <MainView/> }
+        view! { <MainView /> }
     })
 }
 
@@ -33,9 +33,9 @@ fn MainView() -> impl IntoView {
     view! {
         <Router>
             <Routes>
-                <Route path="/experience/:id" view=ExperienceView/>
-                <Route path="/" view=Redirect/>
-                <Route path="*not_found" view=NotFound/>
+                <Route path="/experience/:id" view=ExperienceView />
+                <Route path="/" view=Redirect />
+                <Route path="*not_found" view=NotFound />
             </Routes>
         </Router>
     }
@@ -45,7 +45,7 @@ fn MainView() -> impl IntoView {
 fn NotFound() -> impl IntoView {
     view! {
         <StyledView>
-            <TitleBar subtitle=Some("404 - Not Found".to_string())/>
+            <TitleBar subtitle=Some("404 - Not Found".to_string()) />
             <div class="errorWrapper">Was unable to find the page you are looking for.</div>
         </StyledView>
     }
@@ -66,7 +66,7 @@ fn Redirect() -> impl IntoView {
     });
     view! {
         <StyledView>
-            <TitleBar/>
+            <TitleBar />
             <Suspense fallback=move || {
                 view! { <Info>Navigating</Info> }
             }>
@@ -81,7 +81,7 @@ fn Redirect() -> impl IntoView {
                                         <Error>
                                             Error loading Navigator Position: {e.to_string()}
                                         </Error>
-                                        <Login update_authentication=write_update_authentication/>
+                                        <Login update_authentication=write_update_authentication />
                                     }
                                         .into_view()
                                 }
@@ -134,7 +134,7 @@ fn ExperienceView() -> impl IntoView {
                             match timeline_url_error {
                                 None => {
                                     view! {
-                                        <TitleBar/>
+                                        <TitleBar />
                                         <div on:click=move |_| write_navigator_expanded(true)>
                                             <Navigator
                                                 experience=experience_id

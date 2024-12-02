@@ -197,12 +197,14 @@ pub fn Navigator(
                                 {move || match connections.clone() {
                                     Ok(connections) => {
                                         let wrapper = create_node_ref();
-                                        use_resize_observer(wrapper, move |entries, _observer| {
-                                            let rect = entries[0].content_rect();
-                                            write_width.set(rect.width());
-                                            write_height.set(rect.height());
-                                        });
-
+                                        use_resize_observer(
+                                            wrapper,
+                                            move |entries, _observer| {
+                                                let rect = entries[0].content_rect();
+                                                write_width.set(rect.width());
+                                                write_height.set(rect.height());
+                                            },
+                                        );
                                         let view = connections
                                             .connections
                                             .iter()
@@ -231,13 +233,16 @@ pub fn Navigator(
                                                     let width = read_width();
                                                     let relative_y = y() - height / 2.0;
                                                     let relative_x = x() - width / 2.0;
-
-                                                    let mut res = (-1.0 * (relative_y) / ((relative_x).powi(2) + (relative_y).powi(2)).sqrt()).acos() * (180. as f64 / f64::consts::PI);
-                                                    if relative_x < 0. {res += (180. - res) * 2.}
+                                                    let mut res = (-1.0 * (relative_y)
+                                                        / ((relative_x).powi(2) + (relative_y).powi(2)).sqrt())
+                                                        .acos() * (180. as f64 / f64::consts::PI);
+                                                    if relative_x < 0. {
+                                                        res += (180. - res) * 2.;
+                                                    }
                                                     res - 90.
                                                 };
-
                                                 let connection_id = connection.id.clone();
+
                                                 view! { class=style,
                                                     <div
                                                         class="experience_wrap"
@@ -256,13 +261,19 @@ pub fn Navigator(
                                                     <div
                                                         class="connection"
                                                         style:width=move || format!("{}px", connection_len())
-                                                        style:transform=move || { format!("rotate({}deg)", connection_rotation()) }
+                                                        style:transform=move || {
+                                                            format!("rotate({}deg)", connection_rotation())
+                                                        }
                                                     ></div>
                                                 }
                                             })
                                             .collect_view();
                                         view! { class=style,
-                                            <div class="connectedExperiencesWrapper" ref=wrapper class:collapsedConnections = move || {!expanded()}>
+                                            <div
+                                                class="connectedExperiencesWrapper"
+                                                ref=wrapper
+                                                class:collapsedConnections=move || { !expanded() }
+                                            >
                                                 {view}
                                             </div>
                                             <div class="centerExperienceCard">
@@ -293,69 +304,91 @@ pub fn Navigator(
 
             </Suspense>
         </div>
-        <Suspense fallback=move || view! {<Info>Loading</Info>}>
-        {
-            move || {
+        <Suspense fallback=move || {
+            view! { <Info>Loading</Info> }
+        }>
+            {move || {
                 if options() && expanded() {
                     match connections() {
-                        Some(loading_result) => match loading_result {
-                            Ok(connections) => {
-                                let (connections, write_connections) = create_signal(connections);
-                                let (expanded, write_expanded) = create_signal(false);
-                                view! {
-                                    <Band click=Callback::new(move |_| {write_expanded.update(|v| *v = !*v)})>
-                                        <img src=relative_url("/icons/arrow.svg").unwrap().to_string() style="position:absolute; left: var(--contentSpacing); top: 50%;transition: 100ms" style:transform=move || {
-                                            if expanded() {
-                                                "translateY(-50%) rotate(90deg)"
-                                            }
-                                            else {
-                                                "translateY(-50%) rotate(0deg)"
-                                            }
-                                        }/>
-                                        {move || {connections().experience_name}}
-                                    </Band>
-                                    <div style:display=move || if expanded() {"block"} else {"none"}>
-                                        <Band color="var(--accentColor1)"
-                                        click=Callback::new(move |_| {
-                                            let experience_id = experience();
-                                            let new_connection_status = !connections().public;
-                                            write_connections.update(|v| v.public = new_connection_status);
-                                            spawn_local(async move {
-                                                if let Err(e) = api_request::<(), _>(&format!("/experience/{}/visibility", experience_id), &new_connection_status).await {
-                                                    window().alert_with_message(&format!("Unable to change visibility: {}", e)).unwrap();
+                        Some(loading_result) => {
+                            match loading_result {
+                                Ok(connections) => {
+                                    let (connections, write_connections) = create_signal(
+                                        connections,
+                                    );
+                                    let (expanded, write_expanded) = create_signal(false);
+                                    view! {
+                                        <Band click=Callback::new(move |_| {
+                                            write_expanded.update(|v| *v = !*v)
+                                        })>
+                                            <img
+                                                src=relative_url("/icons/arrow.svg").unwrap().to_string()
+                                                style="position:absolute; left: var(--contentSpacing); top: 50%;transition: 100ms"
+                                                style:transform=move || {
+                                                    if expanded() {
+                                                        "translateY(-50%) rotate(90deg)"
+                                                    } else {
+                                                        "translateY(-50%) rotate(0deg)"
+                                                    }
                                                 }
-                                            })
-                                        })
-                                        >
-                                            <img src=move|| {
-                                                if connections().public {
-                                                    relative_url("/icons/public.svg").unwrap().to_string()
-                                                }else {
-                                                    relative_url("/icons/private.svg").unwrap().to_string()
-                                                }}/>
+                                            />
+                                            {move || { connections().experience_name }}
                                         </Band>
-                                    </div>
-                            }.into_view()}
-                            Err(e) => {
-                                view! {
-                                    <Error>
-                                        Error loading Navigator: {e.to_string()}
-                                    </Error>
-                                }.into_view()
+                                        <div style:display=move || {
+                                            if expanded() { "block" } else { "none" }
+                                        }>
+                                            <Band
+                                                color="var(--accentColor1)"
+                                                click=Callback::new(move |_| {
+                                                    let experience_id = experience();
+                                                    let new_connection_status = !connections().public;
+                                                    write_connections
+                                                        .update(|v| v.public = new_connection_status);
+                                                    spawn_local(async move {
+                                                        if let Err(e) = api_request::<
+                                                            (),
+                                                            _,
+                                                        >(
+                                                                &format!("/experience/{}/visibility", experience_id),
+                                                                &new_connection_status,
+                                                            )
+                                                            .await
+                                                        {
+                                                            window()
+                                                                .alert_with_message(
+                                                                    &format!("Unable to change visibility: {}", e),
+                                                                )
+                                                                .unwrap();
+                                                        }
+                                                    })
+                                                })
+                                            >
+                                                <img src=move || {
+                                                    if connections().public {
+                                                        relative_url("/icons/public.svg").unwrap().to_string()
+                                                    } else {
+                                                        relative_url("/icons/private.svg").unwrap().to_string()
+                                                    }
+                                                } />
+                                            </Band>
+                                        </div>
+                                    }
+                                        .into_view()
+                                }
+                                Err(e) => {
+                                    view! {
+                                        <Error>Error loading Navigator: {e.to_string()}</Error>
+                                    }
+                                        .into_view()
+                                }
                             }
                         }
-                        None => {
-                            view! {
-                                <Info>Loading</Info>
-                            }.into_view()
-                        }
+                        None => view! { <Info>Loading</Info> }.into_view(),
                     }
-                }
-                else {
+                } else {
                     ().into_view()
                 }
-            }
-        }
+            }}
         </Suspense>
     }
 }
@@ -398,7 +431,9 @@ pub fn ExperienceCard(
 
     view! { class=style,
         <div class="innerWrap" class:enlarge=enlarge on:click=click>
-            <img src=move || { relative_url(&format!("/api/experience/{}/cover/small", id())).unwrap().to_string() }/>
+            <img src=move || {
+                relative_url(&format!("/api/experience/{}/cover/small", id())).unwrap().to_string()
+            } />
             <a class="textWrap">{name}</a>
         </div>
     }
