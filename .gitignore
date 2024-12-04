@@ -24,5 +24,6 @@ experiences_navigator/Cargo.toml
 experiences_navigator/Cargo.lock
 experiences_types/Cargo.toml
 experiences_types/Cargo.lock
+timeline_types/Cargo.toml
 
 frontend/dist/
