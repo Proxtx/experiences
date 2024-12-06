@@ -8,10 +8,10 @@ pub use {
         serde::json::Json,
         State,
     },
+    timeline_types::api::{APIError, APIResult, CompressedEvent},
+    timeline_types::available_plugins::AvailablePlugins,
     shared::{
         standalone_experience_types::types::{ExperienceConnection, ExperienceConnectionResponse},
-        timeline::types::api::{APIError, APIResult, CompressedEvent},
-        timeline::types::available_plugins::AvailablePlugins,
         types::{
             CreateExperienceRequest, Experience, ExperienceError, ExperienceEvent, FavoriteRequest,
         },
@@ -263,7 +263,7 @@ pub mod experiences {
         };
 
         if !experience.public
-            && let Err(e) = auth(cookies, config)
+            && let Err(_e) = auth(cookies, config)
         {
             return status::Custom(
                 Status::Unauthorized,

@@ -2,7 +2,7 @@ use std::{collections::HashMap, error, fmt, hash::Hash};
 
 use serde::{Deserialize, Serialize};
 
-use crate::timeline::types::{
+use timeline_types::{
     api::{CompressedEvent, EventWrapper},
     available_plugins::AvailablePlugins,
 };

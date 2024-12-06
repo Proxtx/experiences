@@ -7,14 +7,10 @@ use {
         wrappers::{Band, Error, Info, StyledView},
     },
     leptos::*,
-    shared::{
-        timeline::{
-            frontend::{events_display::EventsViewer, plugin_manager::PluginManager},
-            types::available_plugins::AvailablePlugins,
-        },
-        types::{Experience, ExperienceEvent, PluginExperienceEvent},
-    },
+    link::timeline_frontend_lib::{events_display::EventsViewer, plugin_manager::PluginManager},
+    shared::types::{Experience, ExperienceEvent, PluginExperienceEvent},
     std::sync::Arc,
+    timeline_types::available_plugins::AvailablePlugins,
 };
 
 #[component]

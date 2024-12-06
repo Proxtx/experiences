@@ -1,17 +1,15 @@
 use {
     chrono::Utc,
     raqote::{DrawOptions, DrawTarget, Image},
-    shared::{
-        timeline::types::{
-            api::CompressedEvent,
-            timing::Timing,
-            available_plugins::AvailablePlugins
-        },
-        types::{
-            CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent,
-            ExperienceResult,
-        },
+    timeline_types::{
+        api::CompressedEvent,
+        timing::Timing,
+        available_plugins::AvailablePlugins
     },
+    shared::types::{
+        CompressedExperienceEvent, Experience, ExperienceError, ExperienceEvent,
+        ExperienceResult,
+    },    
     std::{collections::HashMap, path::PathBuf, sync::Arc, thread},
     tokio::{
         fs::{write, File},

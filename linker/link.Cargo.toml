@@ -8,6 +8,6 @@ path = "src/lib.rs"
 
 [features]
 server = []
-client = ["timeline_frontend"]
+client = ["dep:timeline_frontend"]
 
 [dependencies]

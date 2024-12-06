@@ -50,7 +50,7 @@ async fn main() {
         .expect("Unable to read preset cargo file to string");
 
     str += &format!(
-        "\ntimeline_frontend_lib = {{path = \"{}\", features=[\"experiences\"], optional=true}}\n",
+        "\ntimeline_frontend = {{path = \"{}\", features=[\"experiences\"], optional=true}}\n",
         timeline_directory.join("frontend").display(),
     );
 

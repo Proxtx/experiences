@@ -7,15 +7,11 @@ use {
     },
     leptos::*,
     leptos_router::*,
-    shared::{
-        standalone_experience_types::types::ExperiencesHostname,
-        timeline::{
-            frontend::{
-                events_display::DisplayWithDay, plugin_manager::PluginManager, wrappers::Login,
-            },
-            types::api::TimelineHostname,
-        },
+    link::timeline_frontend_lib::{
+        events_display::DisplayWithDay, plugin_manager::PluginManager, wrappers::Login,
     },
+    shared::standalone_experience_types::types::ExperiencesHostname,
+    timeline_types::api::TimelineHostname,
 };
 
 mod experience;

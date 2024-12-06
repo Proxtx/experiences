@@ -2,11 +2,9 @@ use {
     crate::PluginRenderers,
     image::Pixel,
     raqote::{DrawOptions, DrawTarget, IntRect, SolidSource},
-    shared::{
-        timeline::types::api::CompressedEvent,
-        types::Experience,
-        timeline::types::available_plugins::AvailablePlugins
-    },
+    timeline_types::api::CompressedEvent,
+    timeline_types::available_plugins::AvailablePlugins,
+    shared::types::Experience,
     std::{collections::HashMap, fmt::Debug, path::Path, pin::Pin},
 };
 
