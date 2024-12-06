@@ -1,6 +1,6 @@
 use {
     serde::{Deserialize, Serialize},
-    types::timing::Timing,
+    timeline_types::timing::Timing,
 };
 
 #[cfg_attr(feature = "client", derive(Deserialize))]
@@ -18,7 +18,7 @@ pub struct ExperienceConnectionResponse {
     pub public: bool,
 }
 
-pub use types::api::ExperiencesHostname;
+pub use timeline_types::api::ExperiencesHostname;
 
 #[derive(Serialize, Deserialize)]
 pub enum CompressedExperienceEvent {

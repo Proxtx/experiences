@@ -7,13 +7,6 @@ use tokio::{
 
 #[tokio::main]
 async fn main() {
-    let mut file = File::open("main.Cargo.toml")
-        .await
-        .expect("Did not find preset cargo file");
-    let mut str = String::new();
-    file.read_to_string(&mut str)
-        .await
-        .expect("Unable to read preset cargo file to string");
     let mut timeline_location = String::new();
     let mut timeline_location_file = File::open("../timeline_location.txt")
         .await
@@ -25,41 +18,29 @@ async fn main() {
 
     let timeline_directory = PathBuf::from("../").join(PathBuf::from(timeline_location));
 
-    str += &format!(
-        "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
-        timeline_frontend = {{path = \"{}\", features=[\"experiences\"], optional=true}}
-        \n",
-        timeline_directory.join("types").display(),
-        timeline_directory.join("frontend").display()
-    );
+    //timeline_types
 
-    write("../shared/Cargo.toml", str)
-        .await
-        .expect("Unable to write new Cargo.toml file");
-
-    //navigator
-
-    let mut navigator_file = File::open("navigator.Cargo.toml")
+    let mut timeline_types_file = File::open("timeline_types.Cargo.toml")
         .await
         .expect("Did not find preset cargo file");
     let mut str = String::new();
-    navigator_file
+    timeline_types_file
         .read_to_string(&mut str)
         .await
         .expect("Unable to read preset cargo file to string");
 
     str += &format!(
-        "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
+        "\ntypes = {{path = \"{}\", features=[\"experiences\", \"client\"]}}
         \n",
         timeline_directory.join("types").display(),
     );
 
-    write("../experiences_navigator/Cargo.toml", str)
+    write("../timeline_types/Cargo.toml", str)
         .await
         .expect("Unable to write new Cargo.toml file");
 
-    //experiences_types
-    let mut types_file = File::open("experiences_types.Cargo.toml")
+    //link
+    let mut types_file = File::open("link.Cargo.toml")
         .await
         .expect("Did not find preset cargo file");
     let mut str = String::new();
@@ -69,12 +50,11 @@ async fn main() {
         .expect("Unable to read preset cargo file to string");
 
     str += &format!(
-        "\ntypes = {{path = \"{}\", features=[\"experiences\"]}}
-        \n",
-        timeline_directory.join("types").display(),
+        "\ntimeline_frontend_lib = {{path = \"{}\", features=[\"experiences\"], optional=true}}\n",
+        timeline_directory.join("frontend").display(),
     );
 
-    write("../experiences_types/Cargo.toml", str)
+    write("../link/Cargo.toml", str)
         .await
         .expect("Unable to write new Cargo.toml file");
 }

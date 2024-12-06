@@ -13,3 +13,4 @@ client = []
 
 [dependencies]
 serde = { version = "1.0.208", features = ["derive"] }
+timeline_types = { path = "../timeline_types" }

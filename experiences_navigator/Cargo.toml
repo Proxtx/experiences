@@ -19,4 +19,5 @@ stylers = { version = "1.0.0-alpha" }
 serde_json = "1.0.120"
 serde = { version = "1.0.203", features = ["derive"] }
 url = "2.5.2"
-experiences_types = {path = "../experiences_types", features=["client"]}
+experiences_types = { path = "../experiences_types", features = ["client"] }
+timeline_types = { path = "../timeline_types" }

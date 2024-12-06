@@ -15,15 +15,12 @@ Cargo.lock
 
 
 timeline_location.txt
-shared/Cargo.toml
-shared/Cargo.lock
 server/config.toml
 server/experiences
 server/covers
-experiences_navigator/Cargo.toml
-experiences_navigator/Cargo.lock
-experiences_types/Cargo.toml
-experiences_types/Cargo.lock
 timeline_types/Cargo.toml
+tiemline_types/Cargo.lock
+link/Cargo.toml
+link/Cargo.lock
 
 frontend/dist/
