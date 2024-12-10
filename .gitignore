@@ -24,3 +24,5 @@ link/Cargo.toml
 link/Cargo.lock
 
 frontend/dist/
+
+plugins/
