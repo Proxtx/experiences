@@ -8,8 +8,6 @@ use {
         response::{content, status},
         routes, Request,
     },
-    timeline_types::available_plugins::AvailablePlugins,
-    std::collections::HashMap,
     tokio::{fs::File, io, sync::RwLock},
 };
 
@@ -17,10 +15,6 @@ mod api;
 mod config;
 mod experience_manager;
 mod renderer;
-
-use renderer::PluginRenderer;
-
-include!(concat!(env!("OUT_DIR"), "/plugins.rs"));
 
 #[rocket::launch]
 async fn rocket() -> _ {

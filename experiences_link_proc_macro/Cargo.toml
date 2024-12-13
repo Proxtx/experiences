@@ -1,5 +1,5 @@
 [package]
-name = "link_proc_macro"
+name = "experiences_link_proc_macro"
 version = "0.1.0"
 edition = "2021"
 
