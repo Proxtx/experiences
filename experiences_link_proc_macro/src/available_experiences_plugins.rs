@@ -5,7 +5,7 @@ use proc_macro2::Ident;
 use quote::quote;
 use syn::{parse_macro_input, ItemEnum};
 
-pub fn generate_available_plugins(item: TokenStream) -> TokenStream {
+pub fn generate_available_experiences_plugins(item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemEnum);
 
     let enum_name = &input.ident;

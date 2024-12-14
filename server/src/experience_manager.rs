@@ -82,7 +82,7 @@ impl ExperienceManager {
                 event: CompressedEvent {
                     time,
                     title: name.clone(),
-                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(id.clone()))
+                    data: serde_json::to_value(CompressedExperienceEvent::Experience(id.clone()))
                         .unwrap(),
                 },
                 favorite: false,
@@ -204,7 +204,7 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_b_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(
+                    data: serde_json::to_value(CompressedExperienceEvent::Experience(
                         experience_b_id.clone(),
                     ))?,
                     time: experience_b_time,
@@ -231,7 +231,7 @@ impl ExperienceManager {
                 favorite: false,
                 id: experience_a_id.clone(),
                 event: CompressedEvent {
-                    data: serde_json::to_value(&CompressedExperienceEvent::Experience(
+                    data: serde_json::to_value(CompressedExperienceEvent::Experience(
                         experience_a_id.clone(),
                     ))?,
                     time: event.1.time,

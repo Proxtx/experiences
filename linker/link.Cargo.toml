@@ -7,7 +7,4 @@ edition = "2021"
 path = "src/lib.rs"
 
 [features]
-server = []
 client = ["dep:timeline_frontend"]
-
-[dependencies]

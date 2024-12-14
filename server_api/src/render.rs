@@ -1,3 +1,8 @@
+use std::path::Path;
+
+use image::Pixel;
+use raqote::DrawTarget;
+
 pub async fn render_image(dimensions: (i32, i32), path: &Path) -> Result<DrawTarget, String> {
     let mut target = DrawTarget::new(dimensions.0, dimensions.1);
     let mut img = match image::ImageReader::open(std::path::PathBuf::from(path)) {

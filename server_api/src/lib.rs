@@ -1,2 +1,2 @@
-mod plugin;
-mod render;
+pub mod plugin;
+pub mod render;

@@ -1,15 +1,12 @@
 use {
-    crate::PluginRenderers,
-    image::Pixel,
     raqote::{DrawOptions, DrawTarget, IntRect, SolidSource},
     timeline_types::api::CompressedEvent,
     timeline_types::available_plugins::AvailablePlugins,
     shared::types::Experience,
-    std::{collections::HashMap, fmt::Debug, path::Path, pin::Pin},
+    std::{collections::HashMap, fmt::Debug},
+    server_api::plugin::PluginRenderer,
+    link::renderer::PluginRenderers
 };
-
-#[experiences_link_proc_macro::]
-pub enum AvailableExperiencesPlugins {};
 
 pub struct Renderer {
     plugins: HashMap<AvailablePlugins, Box<dyn PluginRenderer>>,
@@ -18,7 +15,7 @@ pub struct Renderer {
 impl Renderer {
     pub async fn new() -> Renderer {
         Renderer {
-            plugins: PluginRenderers::init().await.renderers,
+            plugins: PluginRenderers::init().await.renderers.into_values().map(|plugin| (plugin.get_timeline_type(), plugin)).collect::<HashMap<_, _>>(),
         }
     }
 
@@ -328,7 +325,7 @@ struct ResolvedEventRender<'a> {
     pub event: &'a CompressedEvent,
 }
 
-impl<'a> Debug for ResolvedEventRender<'a> {
+impl Debug for ResolvedEventRender<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

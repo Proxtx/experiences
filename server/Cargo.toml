@@ -23,4 +23,5 @@ raqote = "0.8.4"
 rand = "0.8.5"
 image = "0.25.2"
 timeline_types = { path = "../timeline_types" }
-experiences_link_proc_macro = { path = "../experiences_link_proc_macro/" }
+link = { path = "../link", features = ["server"] }
+server_api = { path = "../server_api" }

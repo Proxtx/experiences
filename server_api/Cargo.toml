@@ -7,3 +7,4 @@ edition = "2021"
 raqote = "0.8.4"
 rand = "0.8.5"
 image = "0.25.2"
+timeline_types = { path = "../timeline_types" }

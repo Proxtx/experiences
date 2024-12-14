@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use tokio::{
-    fs::{write, File},
+    fs::{read_dir, write, File},
     io::AsyncReadExt,
 };
 
@@ -49,8 +49,31 @@ async fn main() {
         .await
         .expect("Unable to read preset cargo file to string");
 
+    let mut dirs = read_dir("../plugins/")
+        .await
+        .expect("Unable to find plugins directory");
+
+    let mut plugins_str = String::new();
+    let mut server_features_str = String::new();
+
+    while let Some(entry) = dirs
+        .next_entry()
+        .await
+        .expect("Unable to read plugins directory")
+    {
+        let plugin_name = entry.file_name().into_string().expect("Unable to convert filename to string");
+        server_features_str.push_str(&format!("\"dep:{}\", ", plugin_name));
+        plugins_str.push_str(&format!("{0} = {{path=\"../plugins/{0}/\", optional=true}}\n", plugin_name));
+    }
+
+    str += &format!("server = [{} \"dep:server_api\"]\n[dependencies]\n", server_features_str);
+
+    str += &plugins_str;
+
     str += &format!(
-        "\ntimeline_frontend = {{path = \"{}\", features=[\"experiences\"], optional=true}}\n",
+        "\ntimeline_frontend = {{path = \"{}\", features=[\"experiences\"], optional=true}}\n
+        server_api = {{path=\"../server_api\", optional=true}}\n
+        experiences_link_proc_macro = {{path=\"../experiences_link_proc_macro\"}}",
         timeline_directory.join("frontend").display(),
     );
 
