@@ -28,11 +28,11 @@ pub struct ExperienceManager {
 }
 
 impl ExperienceManager {
-    pub async fn new(config: &Config) -> Self {
+    pub async fn new(config: &Config, renderer: Arc<Renderer>) -> Self {
         ExperienceManager {
             experiences_folder: config.experiences_folder.clone(),
             cache: RwLock::new(HashMap::new()),
-            renderer: Arc::new(Renderer::new().await),
+            renderer: renderer,
             covers_folder: config.covers_folder.clone(),
         }
     }

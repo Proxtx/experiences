@@ -1,27 +1,25 @@
 #![feature(let_chains)]
 
 use {
-    api::experiences,
-    rocket::{
+    api::experiences, link::renderer::PluginRenderers, rocket::{
         catch, catchers,
         fs::FileServer,
         response::{content, status},
         routes, Request,
-    },
-    tokio::{fs::File, io, sync::RwLock},
+    }, std::{collections::HashMap, sync::Arc}, tokio::{fs::File, io, sync::RwLock}
 };
 
 mod api;
-mod config;
-mod experience_manager;
-mod renderer;
+pub use server_api::config;
+pub use server_api::experience_manager;
+pub use server_api::renderer;
 
 #[rocket::launch]
 async fn rocket() -> _ {
     let config = config::Config::load()
         .await
         .unwrap_or_else(|e| panic!("Unable to init Config: {}", e));
-    let experience_manager = experience_manager::ExperienceManager::new(&config).await;
+    let experience_manager = experience_manager::ExperienceManager::new(&config, Arc::new(renderer::Renderer::new(PluginRenderers::init().await.renderers.into_values().map(|plugin| (plugin.get_timeline_type(), plugin)).collect::<HashMap<_, _>>()))).await;
 
     let figment = rocket::Config::figment().merge(("port", config.port));
     rocket::custom(figment)

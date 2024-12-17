@@ -4,8 +4,7 @@ use {
     timeline_types::available_plugins::AvailablePlugins,
     shared::types::Experience,
     std::{collections::HashMap, fmt::Debug},
-    server_api::plugin::PluginRenderer,
-    link::renderer::PluginRenderers
+    crate::plugin::PluginRenderer,
 };
 
 pub struct Renderer {
@@ -13,9 +12,9 @@ pub struct Renderer {
 }
 
 impl Renderer {
-    pub async fn new() -> Renderer {
+    pub fn new(renderers: HashMap<AvailablePlugins, Box<dyn PluginRenderer>>) -> Renderer {
         Renderer {
-            plugins: PluginRenderers::init().await.renderers.into_values().map(|plugin| (plugin.get_timeline_type(), plugin)).collect::<HashMap<_, _>>(),
+            plugins: renderers,
         }
     }
 
