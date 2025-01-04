@@ -2,7 +2,7 @@ use {
     experiences_types_lib::types::ExperiencesHostname,
     leptos::use_context,
     reqwest::Client,
-    timeline_types::api::APIResult,
+    timeline_types::api::{APIError, APIResult},
     url::{ParseError, Url},
 };
 
@@ -13,7 +13,8 @@ where
 {
     let client = Client::new();
     let url = relative_url(&format!("/api{}", endpoint)).unwrap();
-    serde_json::from_str::<APIResult<T>>(
+    #[cfg(any(target_arch = "wasm32", target_arch = "wasm64"))]
+    return serde_json::from_str::<APIResult<T>>(
         &client
             .post(url)
             .body(serde_json::to_string(request)?)
@@ -22,7 +23,10 @@ where
             .await?
             .text()
             .await?,
-    )?
+    )?;
+    return Err(APIError::Custom(
+        "The experiences_navigator was build for a non-wasm target".to_string(),
+    ));
 }
 
 pub fn relative_url(path: &str) -> Result<Url, ParseError> {
